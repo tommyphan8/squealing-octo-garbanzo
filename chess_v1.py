@@ -34,7 +34,6 @@ class Board:
         def __init__(self):
                 self.playerX = []
                 self.playerY = []
-                XK
 
         # add piece for each player
         def addPiece(self, player, ptype, x, y): 
@@ -52,6 +51,18 @@ class Board:
                                 return self.playerX[1]
                 else:
                         return self.playerY[0]
+						
+		def updateLocation(self, player, ptype, x, y):
+				if player == X:
+						if ptype == K:
+								self.board.playerX[0].x = x
+								self.board.playerX[0].y = y 
+						else:
+								self.board.playerX[1].x = x
+								self.board.playerX[1].y = y 
+				else:
+						self.board.playerY[0].x = x 
+						self.board.playerY[0].y = y 
 
 
 
