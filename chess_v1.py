@@ -55,11 +55,11 @@ class Board:
         def updateLocation(self, player, ptype, x, y):
                 if player == X:
                         if ptype == K:
-                                        self.board.playerX[0].x = x
-                                        self.board.playerX[0].y = y 
+                                self.board.playerX[0].x = x
+                                self.board.playerX[0].y = y 
                         else:
-                                        self.board.playerX[1].x = x
-                                        self.board.playerX[1].y = y 
+                                self.board.playerX[1].x = x
+                                self.board.playerX[1].y = y 
                 else:
                         self.board.playerY[0].x = x 
                         self.board.playerY[0].y = y 
@@ -74,9 +74,9 @@ class Board:
                                 print('| ', end="")
                                 if((i,j) == xK):
                                         print('WK ', end="")
-                                else if ((i,j)== xR):
+                                elif ((i,j)== xR):
                                         print('WR ', end="")
-                                else if((i,j) == yK):
+                                elif((i,j) == yK):
                                         print('BK ', end="")
                                 else:
                                         print('   ', end="")
