@@ -68,48 +68,58 @@ class Board:
                 xK = (self.board.playerX[0].x, self.board.playerX[0].y)
                 xR = (self.board.playerX[1].x, self.board.playerX[1].y)
                 yK = (self.board.playerY[0].x, self.board.playerY[0].y)
-                print('+----+----+----+----+----+----+----+----+')
+                print("+----+----+----+----+----+----+----+----+")
                 for i in range(1,9):
                         for j in range(1,9):
-                                print('| ', end="")
+                                print("| ")
                                 if((i,j) == xK):
-                                        print('WK ', end="")
+                                        print("WK ")
                                 elif ((i,j)== xR):
-                                        print('WR ', end="")
+                                        print("WR ")
                                 elif((i,j) == yK):
-                                        print('BK ', end="")
+                                        print("BK ")
                                 else:
-                                        print('   ', end="")
-                print('|\n+----+----+----+----+----+----+----+----+')
-                                        
-		
-
-
+                                        print("   ")
+                print("|\n+----+----+----+----+----+----+----+----+")
 
 
 class Game:
         def __int__(self):
-                self.board = Board()
+                self.state = Board()
 
         def addPiece(self, player, ptype, x, y):
                 if player == X:
-                        self.board.playerX.addPiece(X, ptype, x, y)
+                        self.state.playerX.addPiece(X, ptype, x, y)
                 else:
-                        self.board.playerY.addPiece(Y, ptype, x, y)
+                        self.state.playerY.addPiece(Y, ptype, x, y)
+
+        def printState(self):
+                self.printBoard()
 
         def availLocations(self, player, ptype):
                 available =[]
                 dangerZone = []
                 if(player == X):
                         if(ptype == K):
-                                available = self.board.playerX[0].getSurrounding()
+                                available = self.state.playerX[0].getSurrounding()
                         else:
-                                available = self.board.playerX[1].rookway()
-                        return available - self.board.playerY[0].getSurrounding()
+                                available = self.state.playerX[1].rookway()
+                        return available - self.state.playerY[0].getSurrounding()
                 else:
-                        available = self.board.playerY[0].getSurrounding()
-                        return available - self.board.playerX[0].getSurrounding() - self.board.playerX[1].rookway()
+                        available = self.state.playerY[0].getSurrounding()
+                        return available - self.state.playerX[0].getSurrounding() - self.state.playerX[1].rookway()
 
+def main():
+        print("test case 1")
+        testcase1 = Game()
+        #testcase1.addPiece(0,0,3,4)
+        #testcase1.addPiece(0,1,4,5)
+        #testcase1.addPiece(1,0,5,5)
+        testcase1.printState()
+
+if __name__ == '__main__':
+	main()
+        
 
 
         
