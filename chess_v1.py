@@ -52,17 +52,37 @@ class Board:
                 else:
                         return self.playerY[0]
 						
-		def updateLocation(self, player, ptype, x, y):
-				if player == X:
-						if ptype == K:
-								self.board.playerX[0].x = x
-								self.board.playerX[0].y = y 
-						else:
-								self.board.playerX[1].x = x
-								self.board.playerX[1].y = y 
-				else:
-						self.board.playerY[0].x = x 
-						self.board.playerY[0].y = y 
+        def updateLocation(self, player, ptype, x, y):
+                if player == X:
+                        if ptype == K:
+                                        self.board.playerX[0].x = x
+                                        self.board.playerX[0].y = y 
+                        else:
+                                        self.board.playerX[1].x = x
+                                        self.board.playerX[1].y = y 
+                else:
+                        self.board.playerY[0].x = x 
+                        self.board.playerY[0].y = y 
+                                        
+        def printBoard(self):
+                xK = (self.board.playerX[0].x, self.board.playerX[0].y)
+                xR = (self.board.playerX[1].x, self.board.playerX[1].y)
+                yK = (self.board.playerY[0].x, self.board.playerY[0].y)
+                print('+----+----+----+----+----+----+----+----+')
+                for i in range(1,9):
+                        for j in range(1,9):
+                                print('| ', end="")
+                                if((i,j) == xK):
+                                        print('WK ', end="")
+                                else if ((i,j)== xR):
+                                        print('WR ', end="")
+                                else if((i,j) == yK):
+                                        print('BK ', end="")
+                                else:
+                                        print('   ', end="")
+                print(|\n+----+----+----+----+----+----+----+----+')
+                                        
+		
 
 
 
@@ -74,7 +94,7 @@ class Game:
         def addPiece(self, player, ptype, x, y):
                 if player == X:
                         self.board.playerX.addPiece(X, ptype, x, y)
-                else
+                else:
                         self.board.playerY.addPiece(Y, ptype, x, y)
 
         def availLocations(self, player, ptype):
