@@ -94,7 +94,7 @@ class Game:
                         self.state.playerY.addPiece(Y, ptype, x, y)
 
         def printState(self):
-                self.printBoard()
+                self.state.printBoard()
 
         def availLocations(self, player, ptype):
                 available =[]
