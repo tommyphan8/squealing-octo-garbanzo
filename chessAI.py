@@ -1,10 +1,10 @@
 
 class Piece:
-	def __int__(self, player, ptype, x, y):
-		self.player = player
-		self.ptype = ptype
-		self.x = x
-		self.y = y
+	def __init__(self):
+		self.player = ""
+		self.ptype = ""
+		self.x = -1
+		self.y = -1
 
 	def setValue(self,player,ptype,x,y):
 		self.player = player
@@ -54,7 +54,7 @@ def printBoard(xK,xR,yK):
         print("|\n+----+----+----+----+----+----+----+----+")
 
 class Game:
-	def __int__(self):
+	def __init__(self):
 		self.WK = Piece()
 		self.WR = Piece()
 		self.BK = Piece()
