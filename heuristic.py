@@ -139,7 +139,7 @@ def search(Piece, game, depth, maxPlayer):
 				return bestValue
 
 
-temp = Board()
-temp.playerX.append(Piece("X","ROOK",3,3))
-temp.playerX.append(Piece("X","KING",2,2))
-print(generateMoves(temp, "X"))
+# temp = Board()
+# temp.playerX.append(Piece("X","ROOK",3,3))
+# temp.playerX.append(Piece("X","KING",2,2))
+# print(generateMoves(temp, "X"))
