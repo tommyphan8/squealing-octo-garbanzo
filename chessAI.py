@@ -1,4 +1,5 @@
 import math	
+import copy
 		
 #http://chessprogramming.wikispaces.com/Simplified+evaluation+function
 #Piece Values for chess piece
@@ -44,6 +45,9 @@ class Piece:
 	def updatePos(self,x,y):
 		self.x = x
 		self.y = y
+
+	def getPos(self):
+		return (self.x,self.y)
 
 	def printPiece(self):
 		print(self.player,self.ptype,"(",self.x,",",self.y,")")
@@ -101,20 +105,27 @@ class Board:
 			dangerZone = self.BK.getSurrounding()
 			if(piece.ptype == "KING"):
 				if ((self.WR.x, self.WR.y) in dangerZone):
-					return FALSE
+					return False
 				else: 
-					return TRUE
+					return True
 			else:
 				if((self.WK.x, self.WK.y) in dangerZone):
-					return FALSE
+					return False
 				else:
-					return TRUE
+					return True
+
+	def isCheck(self, player):
+		if(player == "X"):
+			if self.WK.getPos() in self.BK.getSurrounding():
+				return True
+		else:
+			dangerZone = self.WK.getSurrounding()
+			dangerZone.extend(rookway(self.WR))
+			if self.BK.getPos() in dangerZone:
+				return True
+		return False
+
 		
-
-
-
-
-
 def printBoard(xK,xR,yK):
     print("+----+----+----+----+----+----+----+----+")
     for i in range(0,8):
@@ -129,6 +140,8 @@ def printBoard(xK,xR,yK):
             else:
                 print("   ",end="")
         print("|\n+----+----+----+----+----+----+----+----+")
+
+
 
 def heustric(board, player):
 	blackScore = 0
@@ -181,13 +194,13 @@ def search(board, player, depth, maxPlayer):
 			newBoard = copy.deepcopy(board)
 			#newBoard = board
 			if player == "X":
-				newBoard.BK.updatePos(child[1],child[2])
+				newBoard.BK.updatePos(child[0],child[1])
 				val = search(newBoard,"Y", depth-1, False)	
 			else:
 				if child[0] == "WK":
-					newBoard.WK.updatePos(child[1],child[2])
+					newBoard.WK.updatePos(child[0],child[1])
 				else:
-					newBoard.WR.updatePos(child[1],child[2])	
+					newBoard.WR.updatePos(child[0],child[1])	
 				val = search(newBoard,"X", depth-1, False)
 			if val[1] > bestValue:
 				bestValue = val[1]
@@ -203,13 +216,13 @@ def search(board, player, depth, maxPlayer):
 			newBoard = copy.deepcopy(board)
 			#newBoard = board
 			if player == "X":
-				newBoard.BK.updatePos(child[1],child[2])
+				newBoard.BK.updatePos(child[0],child[1])
 				val = search(newBoard,"Y", depth-1, True)	
 			else: 
 				if child[0] == "WK":
-					newBoard.WK.updatePos(child[1],child[2])
+					newBoard.WK.updatePos(child[0],child[1])
 				else:
-					newBoard.WR.updatePos(child[1],child[2])	
+					newBoard.WR.updatePos(child[0],child[1])	
 				val = search(newBoard,"X", depth-1, True)
 			if val[1] < bestValue:
 				bestValue = val[1]
@@ -224,8 +237,11 @@ def search(board, player, depth, maxPlayer):
 temp = Board()
 temp.addPiece("X","ROOK",0,1)
 temp.addPiece("X","KING",0,5)
-temp.addPiece("Y","KING",7,5)
+temp.addPiece("Y","KING",1,5)
 temp.printState()
 
 pos = generateMoves(temp,"X")
 print(pos)
+print(temp.isCheck("X"))
+
+print(search(temp, "X",2,True))
