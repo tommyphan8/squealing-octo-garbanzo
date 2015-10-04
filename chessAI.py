@@ -91,6 +91,24 @@ class Board:
 						available.remove(temp)
 		return available
 
+	def legalMove(self, piece):
+		current = (piece.x,piece.y)
+		if(piece.player == "X"):
+			dangerZone = self.BK.getSurrounding()
+			if(piece.ptype == "KING"):
+				if ((self.WR.x, self.WR.y) in dangerZone):
+					return FALSE
+				else: 
+					return TRUE
+			else:
+				if((self.WK.x, self.WK.y) in dangerZone):
+					return FALSE
+				else:
+					return TRUE
+		
+
+
+
 
 
 def printBoard(xK,xR,yK):
