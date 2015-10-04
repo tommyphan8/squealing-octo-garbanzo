@@ -1,5 +1,5 @@
 import math	
-		
+import copy
 #http://chessprogramming.wikispaces.com/Simplified+evaluation+function
 #Piece Values for chess piece
 Rook = 500
@@ -28,118 +28,155 @@ pieceSquareTableRook[6] = [-5,  0,  0,  0,  0,  0,  0, -5]
 pieceSquareTableRook[7] = [0,  0,  0,  5,  5,  0,  0,  0]
 
 class Piece:
-	def __init__(self, player, ptype, x, y):
-		self.player = player
-		self.ptype = ptype
+	def __init__(self):
+		self.player = None
+		self.ptype = None
+		self.x = None
+		self.y = None
+		self.capture = False
+
+	def updatePos(self, x, y):
 		self.x = x
-		self.y = y
-
-        #return locations around this piece
-	def getSurrounding(self):
-		return [(self.x+1, self.y-1), (self.x+1, self.y+1), (self.x-1, self.y-1), (self.x-1, self.y+1), (self.x, self.y+1), (self.x, self.y-1), (self.x+1, self.y), (self.x-1, self.y)]
-
-        #return locations cover by a rook
-	def rookway(self):
-		locations = []
-		for i in range(0,8):
-			locations.append((i, self.y))
-			locations.append((self.x, i))
-		return locations
+		self.y = y	
 
 
 class Board:
     def __init__(self):
-        self.playerX = []
-        self.playerY = []
+        self.WK = Piece()
+        self.WR = Piece()
+        self.BK = Piece()
 
-
-#Player x is white 
-#Player y is black
-def heustric(white, black):
+def heustric(board, player):
 	blackScore = 0
 	whiteScore = 0
 
-	for i in black:
-		if i.ptype == "KING":
-			blackScore += King
-			blackScore += pieceSquareTableKing[i.y][i.x]
-		else:
-			blackScore += Rook
-			blackScore += pieceSquareTableRook[i.y][i.x]
+	if board.BK.capture == False:
+		whiteScore += King
+		whiteScore += pieceSquareTableKing[abs((board.BK.y)-7)][board.BK.x]
 
-	for  j in white:
-		if j.ptype == "KING":	
-			whiteScore += King
-			whiteScore += pieceSquareTableKing[abs((j.y)-7)][j.x]
-			#whiteScore += pieceSquareTableKing[abs(i.y-7)][i.x]
-		else:
-			whiteScore += Rook
-			whiteScore += pieceSquareTableRook[abs(j.y-7)][j.x]
+	if board.WK.capture == False:
+		blackScore += King
+		blackScore += pieceSquareTableKing[board.WK.y][board.WK.x]
 
-	return blackScore -	whiteScore
+	if board.WR.capture == False:
+		blackScore += Rook
+		blackScore += pieceSquareTableRook[board.WR.y][board.WR.x]	
+
+	if (player == "X"):
+		return blackScore - whiteScore
+	else:
+		return whiteScore - blackScore		
 
 
                         
-#Generate possible moves for input:piece
-def genMovesKing(p, moves):
-	moves.extend((("KING",p.x-1, p.y), ("KING",p.x+1,p.y), ("KING",p.x,p.y+1), ("KING",p.x-1,p.y+1), ("KING",p.x+1, p.y+1), ("KING",p.x, p.y-1), ("KING",p.x+1, p.y-1), ("KING",p.x-1, p.y-1)))
+#Generate PSEUDO MOVES WILL NEED TO BE FILTERED TO LEGAL MOVES
+def genMovesKing(p):
+	moves = []
+	moves.extend(((p.ptype,p.x-1, p.y), (p.ptype,p.x+1,p.y), (p.ptype,p.x,p.y+1), (p.ptype,p.x-1,p.y+1), (p.ptype,p.x+1, p.y+1), (p.ptype,p.x, p.y-1), (p.ptype,p.x+1, p.y-1), (p.ptype,p.x-1, p.y-1)))
 	
 	#filter out pieces that are out the boundary
 	moves = [x for x in moves if x[1] >= 0 and x[1] <= 7 ]
 	moves = [x for x in moves if x[2] >= 0 and x[2] <= 7]
 			
-	#return moves
+	return moves
 
 #Generate possible moves for input:piece
-def genMovesRook(p, moves):
-	#moves = []
-	for i in range(0,8):
-		moves.append(("ROOK",p.x,i))
-
-	for i in range(0,8):
-		moves.append(("ROOK",i,p.y))
-
-	moves = [x for x in moves if x != ("ROOK",p.x,p.y)]
-
-	#return moves
-
-#Generate total moves for player
-def generateMoves(board, player):
+def genMovesRook(p):
 	moves = []
-	if player == "X":
-		for x in board.playerX:
-			if x.ptype == "ROOK":
-				genMovesRook(x,moves)
-			elif x.ptype == "KING":
-				genMovesKing(x,moves)
+	for i in range(0,8):
+		moves.append((p.ptype,p.x,i))
 
-	else:
-		for x in board.playerY:
-			if x.ptype == "ROOK":
-				genMovesRook(x,moves)
-			elif x.pype == "KING":
-				genMovesKing(x,moves)
+	for i in range(0,8):
+		moves.append((p.ptype,i,p.y))
+
+	#filter out duplicated self piece
+	moves = [x for x in moves if x != (p.ptype,p.x,p.y)]
+	moves = [x for x in moves if x != (p.ptype,p.x,p.y)]
+
 	return moves
 
 
-def search(Piece, game, depth, maxPlayer):
-	if depth == 0: 
-		return heustric(node)
-	if maxPlayer == TRUE:
-		bestValue = -math.inf
-		for child in getMoveKing(node):
-			val = search(child, depth -1, FALSE)
-			if val > bestValue:
-				bestValue = val
+#BLACK PLAYER CONTAINS ONE PIECE (X)
+#WHITE PLAYER CONTAINS TWO PIECE (Y)
+#Generate total moves for player
+def generateMoves(board, player):
+	moves = []
+	if player == "Y":
+		moves.extend(genMovesKing(board.WK))
+		if board.WR.capture == False:
+			moves.extend(genMovesRook(board.WR))
 	else:
-		bestValue = math.inf
-		for child in getMoveKing(node):
-			val = minimax(child, depth -1, TRUE)
-			if val < bestValue:
-				return bestValue
+		moves.extend(genMovesKing(board.BK))
+	return moves
+
+#MiniMax function with no Pruning
+def search(board, player, depth, maxPlayer):
+	if depth == 0: 
+		#print((None, heustric(board, player)))
+		return (None, heustric(board, player))
+	elif maxPlayer == True:
+		bestValue = float('-infinity')
+		bestMove = None
+
+		#generate moves based on player
+		for child in generateMoves(board, player):
+			newBoard = copy.deepcopy(board)
+			#newBoard = board
+			if player == "X":
+				newBoard.BK.updatePos(child[1],child[2])
+				val = search(newBoard,"Y", depth-1, False)	
+			else:
+				if child[0] == "WK":
+					newBoard.WK.updatePos(child[1],child[2])
+				else:
+					newBoard.WR.updatePos(child[1],child[2])	
+				val = search(newBoard,"X", depth-1, False)
+			if val[1] > bestValue:
+				bestValue = val[1]
+				bestMove = child
+		#print (bestMove, bestValue)			
+		return (bestMove, bestValue)
+
+	else:
+		bestValue = float('infinity')
+		bestMove = None
+
+		for child in generateMoves(board, player):
+			newBoard = copy.deepcopy(board)
+			#newBoard = board
+			if player == "X":
+				newBoard.BK.updatePos(child[1],child[2])
+				val = search(newBoard,"Y", depth-1, True)	
+			else: 
+				if child[0] == "WK":
+					newBoard.WK.updatePos(child[1],child[2])
+				else:
+					newBoard.WR.updatePos(child[1],child[2])	
+				val = search(newBoard,"X", depth-1, True)
+			if val[1] < bestValue:
+				bestValue = val[1]
+				bestMove = child
+		print (bestMove, bestValue)		
+		return (bestMove, bestValue)			
 
 
-# temp = Board()
-# temp.playerX.append(Piece("X","ROOK",3,3))
-# temp.playerX.append(Piece("X","KING",2,2))
-# print(generateMoves(temp, "X"))
+temp = Board()
+temp.BK.player = "X"
+temp.BK.ptype = "BK"
+temp.BK.x = 3
+temp.BK.y = 3
+
+temp.WR.player = "Y"
+temp.WR.ptype = "WR"
+temp.WR.x = 4
+temp.WR.y = 6
+
+
+temp.WK.player = "Y"
+temp.WK.ptype = "WK"
+temp.WK.x = 0
+temp.WK.y = 0
+
+print(search(temp, "Y",1,True))
+print(search(temp, "X",2,True))
+print(search(temp, "X",3,True))
