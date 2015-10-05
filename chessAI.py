@@ -311,7 +311,7 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
 
 
 def Move(board, player, alpha, beta):
-	temp = alphaBeta(board, player, 5, alpha, beta, True)
+	temp = alphaBeta(board, player, 5, alpha, beta, True, player)
 	if temp[0][0] == "BK":
 		#print("Y move")
 		board.BK.updatePos(temp[0][1], temp[0][2])
@@ -376,9 +376,9 @@ def testCase(board, alpha, beta):
 
 temp = Board()
 
-temp.addPiece("X","WR",5,4)
-temp.addPiece("X","WK",4,7)
-temp.addPiece("Y","BK",7,5)
+temp.addPiece("X","WR",0,3)
+temp.addPiece("X","WK",1,5)
+temp.addPiece("Y","BK",1,0)
 temp.printState()
 
 pos = generateMoves(temp,"X")
@@ -391,28 +391,6 @@ print("check capture function")
 print(temp.canCapture("X"))
 print(temp.canCapture("Y"))
 
-# for i in range(0,4):
-# 	move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
-# 	temp.move(move[0][0], move[0][1], move[0][2])
-# 	# move = alphaBeta(temp, "Y", 5, alpha, beta, True, "Y")
-# 	# temp.move(move[0][0], move[0][1], move[0][2])
-# 	temp.printState()
 
-
-# move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
-# print("Print: ", move[0])
-# temp.printState()
-# temp.move(move[0][0], move[0][1], move[0][2])
-# temp.printState()
-#temp.printState()
-#temp.move[0][0].updatePos(move[0][2],move[0][1])
-#temp.printState()
-#testCase(temp, alpha, beta)
-temp.addPiece("X","WR",0,1)
-temp.addPiece("X","WK",1,5)
-temp.addPiece("Y","BK",1,0)
-print("initial board")
-temp.printState()
-
-Play(2, temp)
+Play(10, temp)
 
