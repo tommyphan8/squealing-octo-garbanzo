@@ -125,6 +125,43 @@ class Board:
 				return True
 		return False
 
+	def canCapture(self, player):
+		if player == "X":
+			kingway = self.WK.getSurrounding()
+			if self.WR.capture == False:
+				rway = rookway(self.WR)
+			if (self.BK.x, self.BK.y) in kingway:
+				return (True, "KING")
+			if (self.BK.x, self.BK.y) in rway:
+				return (True, "ROOK")
+			return False
+		else:
+			kingway = self.BK.getSurrounding()
+			if (self.WK.x, self.WK.y) in kingway:
+				return True
+
+	def isCheckmate(self, player):
+		if(player == "X"):
+			# X player has only a King left
+			if isCheckmate("X") and self.WR.capture == True:
+				temp = self.availablePos(self.WK)
+				dangerZone = self.BK.getSurrounding()
+				for i in temp:
+					if i in dangerZone:
+						return True
+				return False
+		else:
+			temp = self.availablePos(self.BK)
+			if self.WR.capture == True:
+				dangerZone = self.WK.getSurrounding()
+			else:
+				dangerZone = self.WK.getSurrounding()
+				dangerZone.extend(rookway(self.WR))
+			for i in temp:
+				if i in dangerZone:
+					return True
+			return False
+
 		
 def printBoard(xK,xR,yK):
     print("+----+----+----+----+----+----+----+----+")
@@ -164,6 +201,13 @@ def heustric(board, player):
 	else:
 		return whiteScore - blackScore	
 
+
+def heuristicX(board, piece, pos):
+	blackScore = 0
+	whiteScore = 0
+
+
+	
 
 
 #BLACK PLAYER CONTAINS ONE PIECE (X)
@@ -236,12 +280,14 @@ def search(board, player, depth, maxPlayer):
 
 temp = Board()
 temp.addPiece("X","ROOK",0,1)
-temp.addPiece("X","KING",0,5)
-temp.addPiece("Y","KING",1,5)
+temp.addPiece("X","KING",2,5)
+temp.addPiece("Y","KING",0,5)
 temp.printState()
 
 pos = generateMoves(temp,"X")
 print(pos)
 print(temp.isCheck("X"))
+print(temp.isCheck("Y"))
+print(temp.isCheckmate("Y"))
 
 print(search(temp, "X",2,True))
