@@ -155,7 +155,7 @@ class Board:
 	def isCheckmate(self, player):
 		if(player == "X"):
 			# X player has only a King left
-			if isCheckmate("X") and self.WR.capture == True:
+			if self.isCheck("X") and self.WR.capture == True:
 				temp = self.availablePos(self.WK)
 				dangerZone = self.BK.getSurrounding()
 				for i in temp:
@@ -188,11 +188,11 @@ def printBoard(xK,xR,yK):
     for i in range(0,8):
         for j in range(0,8):
             print("| ",end="")
-            if((i,j) == (xK.x,xK.y)):
+            if((i,j) == (xK.x,xK.y) and xK.capture == False):
                 print("WK ",end="")
-            elif ((i,j)== (xR.x,xR.y)):
+            elif ((i,j)== (xR.x,xR.y) and xR.capture == False):
                 print("WR ",end="")
-            elif((i,j) == (yK.x,yK.y)):
+            elif((i,j) == (yK.x,yK.y) and yK.capture == False):
                 print("BK ",end="")
             else:
                 print("   ",end="")
@@ -310,55 +310,57 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
         return(bestMove, bestValue)
 
 
-#MiniMax without Pruning
-def search(board, player, depth, maxPlayer):
-    if depth == 0: 
-        #print((None, heustric(board, player)))
-        return (None, heustric(board, player))
-    elif maxPlayer == True:
-        bestValue = float('-infinity')
-        bestMove = None
+def Move(board, player, alpha, beta):
+	temp = alphaBeta(board, player, 5, alpha, beta, True)
+	if temp[0][0] == "BK":
+		#print("Y move")
+		board.BK.updatePos(temp[0][1], temp[0][2])
+	elif temp[0][0] == "WK":
+		#print("X move")
+		board.WK.updatePos(temp[0][1], temp[0][2])
+	else:
+		#print("X move")
+		board.WR.updatePos(temp[0][1], temp[0][2])
+	board.printState()
+	
 
-        #generate moves based on player
-        for child in generateMoves(board, player):
-            newBoard = copy.deepcopy(board)
-            #newBoard = board
-            if player == "X":
-                newBoard.BK.updatePos(child[1],child[2])
-                val = search(newBoard,"Y", depth-1, False)  
-            else:
-                if child[0] == "WK":
-                    newBoard.WK.updatePos(child[1],child[2])
-                else:
-                    newBoard.WR.updatePos(child[1],child[2])    
-                val = search(newBoard,"X", depth-1, False)
-            if val[1] > bestValue:
-                bestValue = val[1]
-                bestMove = child
-        #print (bestMove, bestValue)            
-        return (bestMove, bestValue)
 
-    else:
-        bestValue = float('infinity')
-        bestMove = None
+def Play(moves, board):
+	i = 0
+	while i<moves:
+		# Y move first
+		if board.isCheckmate("Y"):
+			print("X win, Checkmate")
+			break
+		else:
+			print("Y move")
+			temp = board.canCapture("Y")
+			if temp!= False:
+				if temp[1] == "KING":
+					board.BK.updatePos(board.WK.x,board.WK.y)
+					board.WK.capture = True
+					board.printState()
+					print("Y win")
+					break
+				else:
+					if (board.WR.x, board.WR.y) not in board.WK.getSurrounding(): 
+						board.BK.updatePos(board.WR.x, board.WR.y)
+						board.WR.capture = True
+						board.printState()
+						print("Draw!")
+						break
+			Move(board,"Y", alpha, beta)
+		
+		# X move
+		if board.isCheckmate("X"):
+			print("Y win, Checkmate")
+			break
+		else:
+			print("X move")
+			Move(board,"X", alpha, beta)
 
-        for child in generateMoves(board, player):
-            newBoard = copy.deepcopy(board)
-            #newBoard = board
-            if player == "X":
-                newBoard.BK.updatePos(child[1],child[2])
-                val = search(newBoard,"Y", depth-1, True)   
-            else: 
-                if child[0] == "WK":
-                    newBoard.WK.updatePos(child[1],child[2])
-                else:
-                    newBoard.WR.updatePos(child[1],child[2])    
-                val = search(newBoard,"X", depth-1, True)
-            if val[1] < bestValue:
-                bestValue = val[1]
-                bestMove = child
-        #print (bestMove, bestValue)     
-        return (bestMove, bestValue)            
+		i += 1
+
 
 def testCase(board, alpha, beta):
     temp = None
@@ -370,19 +372,10 @@ def testCase(board, alpha, beta):
         print(temp)
         print("AlphaBeta", time.clock() - startTime, "seconds")
 
-        # startTime = time.clock()
-        # temp1 = search(board, "X",x,True)
-        # print(temp1)
-        # print("MiniMax", time.clock() - startTime, "seconds")
-
-        # print("Same return value: ", temp == temp1, "\n\n")
-
-
-def Play(moves):
-	i = 1
 
 
 temp = Board()
+
 temp.addPiece("X","WR",5,4)
 temp.addPiece("X","WK",4,7)
 temp.addPiece("Y","BK",7,5)
@@ -415,3 +408,11 @@ for i in range(0,4):
 #temp.move[0][0].updatePos(move[0][2],move[0][1])
 #temp.printState()
 #testCase(temp, alpha, beta)
+temp.addPiece("X","WR",0,1)
+temp.addPiece("X","WK",1,5)
+temp.addPiece("Y","BK",1,0)
+print("initial board")
+temp.printState()
+
+Play(2, temp)
+
