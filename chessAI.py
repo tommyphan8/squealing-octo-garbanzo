@@ -358,6 +358,7 @@ def Play(moves, board):
 		if board.WR.capture == True:
 			board.printState()
 			print("Draw!")
+			break
 		else:
 			print("X move")
 			if (board.BK.x, board.BK.y) in board.WK.getSurrounding():
@@ -365,6 +366,13 @@ def Play(moves, board):
 				board.WK.updatePos(board.BK.x, board.BK.y)
 				board.printState()
 				print("X win")
+				break
+			if (board.BK.x, board.BK.y) in rookway(board.WR):
+				board.BK.capture == True
+				board.WR.updatePos(board.BK.x, board.BK.y)
+				board.printState()
+				print("X win")
+				break
 
 
 			Move(board,"X", alpha, beta)
@@ -385,22 +393,11 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-
-temp.addPiece("X","WR",0,3)
+temp.addPiece("X","WR",6,1)
 temp.addPiece("X","WK",1,5)
 temp.addPiece("Y","BK",1,0)
+print("initial board")
 temp.printState()
 
-pos = generateMoves(temp,"X")
-print(pos)
-print(temp.isCheck("X"))
-print(temp.isCheck("Y"))
-print(temp.isCheckmate("Y"))
-
-print("check capture function")
-print(temp.canCapture("X"))
-print(temp.canCapture("Y"))
-
-
-Play(10, temp)
+Play(35, temp)
 
