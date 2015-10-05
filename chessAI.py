@@ -89,19 +89,24 @@ class Board:
 
 	def availablePos(self,piece):
 		available = []
+		result = []
 		if(piece.player == "X"):
 			dangerZone = self.BK.getSurrounding()
 			if(piece.ptype == "WK"):
-				available = piece.getSurrounding()
+				available = piece.getSurrounding()				
 			else:
 				available = rookway(piece)
+			for i in available:
+					result.append((piece.ptype, i[0], i[1]))
 		else:
 			available = piece.getSurrounding()
+			for i in available:
+					result.append((piece.ptype, i[0], i[1]))
 			dangerZone = rookway(self.WR) + self.WK.getSurrounding()
-		for temp in available:
-					if temp in dangerZone:
-						available.remove(temp)
-		return available
+		for temp in result:
+					if (temp[1],temp[2]) in dangerZone:
+						result.remove(temp)
+		return result
 
 	def legalMove(self, piece):
 		current = (piece.x,piece.y)
@@ -355,6 +360,10 @@ def testCase(board, alpha, beta):
         print("MiniMax", time.clock() - startTime, "seconds")
 
         print("Same return value: ", temp == temp1, "\n\n")
+
+
+def Play(moves):
+	i = 1
 
 
 temp = Board()
