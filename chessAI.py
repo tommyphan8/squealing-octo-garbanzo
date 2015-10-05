@@ -1,10 +1,14 @@
 import math	
 import copy
-		
+import time
+
 #http://chessprogramming.wikispaces.com/Simplified+evaluation+function
 #Piece Values for chess piece
 Rook = 500
 King = 20000
+
+alpha = float("-infinity")
+beta = float("infinity")
 
 #Piece-Square Tables 
 pieceSquareTableKing = [[] for i in range(8)]
@@ -73,7 +77,7 @@ class Board:
 
 	def addPiece(self,player,ptype,x,y):
 		if(player == "X"):
-			if(ptype == "KING"):
+			if(ptype == "WK"):
 				self.WK.setValue(player,ptype,x,y)
 			else:
 				self.WR.setValue(player,ptype,x,y)
@@ -87,7 +91,7 @@ class Board:
 		available = []
 		if(piece.player == "X"):
 			dangerZone = self.BK.getSurrounding()
-			if(piece.ptype == "KING"):
+			if(piece.ptype == "WK"):
 				available = piece.getSurrounding()
 			else:
 				available = rookway(piece)
@@ -103,7 +107,7 @@ class Board:
 		current = (piece.x,piece.y)
 		if(piece.player == "X"):
 			dangerZone = self.BK.getSurrounding()
-			if(piece.ptype == "KING"):
+			if(piece.ptype == "WK"):
 				if ((self.WR.x, self.WR.y) in dangerZone):
 					return False
 				else: 
@@ -227,64 +231,136 @@ def generateMoves(board, player):
 	return moves
 
 
-#MiniMax function with no Pruning
+#MiniMax with alphaBeta Pruning
+def alphaBeta(board, player, depth, alpha, beta, maxPlayer):
+    if depth == 0:
+        return (None, heustric(board, player))
+    elif maxPlayer == True:
+        bestValue = float("-infinity")
+        bestMove = None
+        #generate moves basedo n player using board members
+        for child in generateMoves(board, player):
+            newBoard = copy.deepcopy(board)
+            
+            if player == "X":
+                newBoard.BK.updatePos(child[1], child[2])
+                val = alphaBeta(newBoard, "Y", depth-1, alpha, beta, False)
+                #bestValue = max(bestValue, alphaBeta(newBoard, "Y", depth-1,  alpha, beta, False)[1])
+            else:
+                if child[0] == "WK":
+                    newBoard.WK.updatePos(child[1], child[2])
+                else:
+                    newBoard.WR.updatePos(child[1], child[2])
+                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, False)
+                #bestValue = max(bestValue, alphaBeta(newBoard, "X", depth-1,  alpha, beta, False)[1])
+            
+            if val[1] > bestValue:
+                bestValue = val[1]
+                alpha = bestValue
+                #print(child)
+                #print(val[1])
+                bestMove = child
+            if beta <= alpha:
+                break
+        return(bestMove, bestValue)
+                
+
+    else:
+        bestValue = float("infinity")
+        bestMove = None
+        for child in generateMoves(board, player):
+            newBoard = copy.deepcopy(board)
+            
+            if player == "X":
+                newBoard.BK.updatePos(child[1], child[2])
+                val = alphaBeta(newBoard, "Y", depth-1, alpha, beta, True)
+            else:
+                if child[0] == "WK":
+                    newBoard.WK.updatePos(child[1], child[2])
+                else:
+                    newBoard.WR.updatePos(child[1], child[2])
+                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, True)
+            if val[1] < bestValue:
+                bestValue = val[1]
+                beta = val[1]
+                bestMove = child
+            if beta <= alpha:
+                break
+        return(bestMove, bestValue)
+
+
+#MiniMax without Pruning
 def search(board, player, depth, maxPlayer):
-	if depth == 0: 
-		#print((None, heustric(board, player)))
-		return (None, heustric(board, player))
-	elif maxPlayer == True:
-		bestValue = float('-infinity')
-		bestMove = None
+    if depth == 0: 
+        #print((None, heustric(board, player)))
+        return (None, heustric(board, player))
+    elif maxPlayer == True:
+        bestValue = float('-infinity')
+        bestMove = None
 
-		#generate moves based on player
-		for child in generateMoves(board, player):
-			newBoard = copy.deepcopy(board)
-			#newBoard = board
-			if player == "X":
-				newBoard.BK.updatePos(child[0],child[1])
-				val = search(newBoard,"Y", depth-1, False)	
-			else:
-				if child[0] == "WK":
-					newBoard.WK.updatePos(child[0],child[1])
-				else:
-					newBoard.WR.updatePos(child[0],child[1])	
-				val = search(newBoard,"X", depth-1, False)
-			if val[1] > bestValue:
-				bestValue = val[1]
-				bestMove = child
-		#print (bestMove, bestValue)			
-		return (bestMove, bestValue)
+        #generate moves based on player
+        for child in generateMoves(board, player):
+            newBoard = copy.deepcopy(board)
+            #newBoard = board
+            if player == "X":
+                newBoard.BK.updatePos(child[1],child[2])
+                val = search(newBoard,"Y", depth-1, False)  
+            else:
+                if child[0] == "WK":
+                    newBoard.WK.updatePos(child[1],child[2])
+                else:
+                    newBoard.WR.updatePos(child[1],child[2])    
+                val = search(newBoard,"X", depth-1, False)
+            if val[1] > bestValue:
+                bestValue = val[1]
+                bestMove = child
+        #print (bestMove, bestValue)            
+        return (bestMove, bestValue)
 
-	else:
-		bestValue = float('infinity')
-		bestMove = None
+    else:
+        bestValue = float('infinity')
+        bestMove = None
 
-		for child in generateMoves(board, player):
-			newBoard = copy.deepcopy(board)
-			#newBoard = board
-			if player == "X":
-				newBoard.BK.updatePos(child[0],child[1])
-				val = search(newBoard,"Y", depth-1, True)	
-			else: 
-				if child[0] == "WK":
-					newBoard.WK.updatePos(child[0],child[1])
-				else:
-					newBoard.WR.updatePos(child[0],child[1])	
-				val = search(newBoard,"X", depth-1, True)
-			if val[1] < bestValue:
-				bestValue = val[1]
-				bestMove = child
-		print (bestMove, bestValue)		
-		return (bestMove, bestValue)
+        for child in generateMoves(board, player):
+            newBoard = copy.deepcopy(board)
+            #newBoard = board
+            if player == "X":
+                newBoard.BK.updatePos(child[1],child[2])
+                val = search(newBoard,"Y", depth-1, True)   
+            else: 
+                if child[0] == "WK":
+                    newBoard.WK.updatePos(child[1],child[2])
+                else:
+                    newBoard.WR.updatePos(child[1],child[2])    
+                val = search(newBoard,"X", depth-1, True)
+            if val[1] < bestValue:
+                bestValue = val[1]
+                bestMove = child
+        #print (bestMove, bestValue)     
+        return (bestMove, bestValue)            
 
+def testCase(board, alpha, beta):
+    temp = None
+    temp1 = None
+    for x in range (1,6, 1):
+        print("\nDepth: ", x)
+        startTime = time.clock()
+        temp = alphaBeta(board, "X", x, alpha, beta, True)
+        print(temp)
+        print("AlphaBeta", time.clock() - startTime, "seconds")
 
+        startTime = time.clock()
+        temp1 = search(board, "X",x,True)
+        print(temp1)
+        print("MiniMax", time.clock() - startTime, "seconds")
 
+        print("Same return value: ", temp == temp1, "\n\n")
 
 
 temp = Board()
-temp.addPiece("X","ROOK",0,1)
-temp.addPiece("X","KING",2,5)
-temp.addPiece("Y","KING",1,0)
+temp.addPiece("X","WR",0,1)
+temp.addPiece("X","WK",2,5)
+temp.addPiece("Y","BK",1,0)
 temp.printState()
 
 pos = generateMoves(temp,"X")
@@ -297,4 +373,6 @@ print("check capture function")
 print(temp.canCapture("X"))
 print(temp.canCapture("Y"))
 
-print(search(temp, "X",2,True))
+
+
+testCase(temp, alpha, beta)
