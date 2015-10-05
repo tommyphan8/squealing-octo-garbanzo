@@ -352,11 +352,21 @@ def Play(moves, board):
 			Move(board,"Y", alpha, beta)
 		
 		# X move
-		if board.isCheckmate("X"):
+		if board.isCheckmate("X"): # almost never happen
 			print("Y win, Checkmate")
 			break
+		if board.WR.capture == True:
+			board.printState()
+			print("Draw!")
 		else:
 			print("X move")
+			if (board.BK.x, board.BK.y) in board.WK.getSurrounding():
+				board.BK.capture == True
+				board.WK.updatePos(board.BK.x, board.BK.y)
+				board.printState()
+				print("X win")
+
+
 			Move(board,"X", alpha, beta)
 
 		i += 1
