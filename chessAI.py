@@ -174,6 +174,14 @@ class Board:
 					return True
 			return False
 
+	def move(self, ptype, y, x):
+		if ptype == "WK":
+			self.WK.updatePos(y,x)
+		elif ptype == "WR":
+			self.WR.updatePos(y,x)
+		else:
+			self.BK.updatePos(y,x)
+
 		
 def printBoard(xK,xR,yK):
     print("+----+----+----+----+----+----+----+----+")
@@ -192,23 +200,23 @@ def printBoard(xK,xR,yK):
 
 
 
-def heustric(board, player):
+def heustric(board, currentTurn):
 	blackScore = 0
 	whiteScore = 0
 
 	if board.BK.capture == False:
-		whiteScore += King
-		whiteScore += pieceSquareTableKing[abs((board.BK.y)-7)][board.BK.x]
+		blackScore += King
+		blackScore += pieceSquareTableKing[abs((board.BK.x)-7)][board.BK.y]
 
 	if board.WK.capture == False:
-		blackScore += King
-		blackScore += pieceSquareTableKing[board.WK.y][board.WK.x]
+		whiteScore += King
+		whiteScore += pieceSquareTableKing[board.WK.x][board.WK.y]
 
 	if board.WR.capture == False:
-		blackScore += Rook
-		blackScore += pieceSquareTableRook[board.WR.y][board.WR.x]	
+		whiteScore += Rook
+		whiteScore += pieceSquareTableRook[board.WR.x][board.WR.y]	
 
-	if (player == "X"):
+	if (currentTurn == "Y"):
 		return blackScore - whiteScore
 	else:
 		return whiteScore - blackScore	
@@ -222,8 +230,8 @@ def heuristicX(board, piece, pos):
 	
 
 
-#BLACK PLAYER CONTAINS ONE PIECE (X)
-#WHITE PLAYER CONTAINS TWO PIECE (Y)
+#WHITE PLAYER CONTAINS TWO PIECE (X)
+#BLACK PLAYER CONTAINS ONE PIECE (Y)
 #Generate total moves for player
 def generateMoves(board, player):
 	moves = []
@@ -237,9 +245,17 @@ def generateMoves(board, player):
 
 
 #MiniMax with alphaBeta Pruning
-def alphaBeta(board, player, depth, alpha, beta, maxPlayer):
+#@param board current board that is in play 
+#@param player used to determine which player to generate moves in Tree
+#@param depth determine how many levels to traverse
+#@param alpha used for AlphaBeta algorithm
+#@param beta used for Alpha Beta algorithm
+#@param maxPlayer bool value to determine whether to find maximum or minimum
+#@param currentTurn, whose turn it is used to calculate score of that player in heuristic function
+#@return returns the best position to move to in tuple structure of (<PieceType>, xPosition, yPosition)
+def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
     if depth == 0:
-        return (None, heustric(board, player))
+        return (None, heustric(board, currentTurn))
     elif maxPlayer == True:
         bestValue = float("-infinity")
         bestMove = None
@@ -247,16 +263,16 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer):
         for child in generateMoves(board, player):
             newBoard = copy.deepcopy(board)
             
-            if player == "X":
+            if player == "Y":
                 newBoard.BK.updatePos(child[1], child[2])
-                val = alphaBeta(newBoard, "Y", depth-1, alpha, beta, False)
+                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, False, currentTurn)
                 #bestValue = max(bestValue, alphaBeta(newBoard, "Y", depth-1,  alpha, beta, False)[1])
             else:
                 if child[0] == "WK":
                     newBoard.WK.updatePos(child[1], child[2])
                 else:
                     newBoard.WR.updatePos(child[1], child[2])
-                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, False)
+                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, False, currentTurn)
                 #bestValue = max(bestValue, alphaBeta(newBoard, "X", depth-1,  alpha, beta, False)[1])
             
             if val[1] > bestValue:
@@ -276,15 +292,15 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer):
         for child in generateMoves(board, player):
             newBoard = copy.deepcopy(board)
             
-            if player == "X":
+            if player == "Y":
                 newBoard.BK.updatePos(child[1], child[2])
-                val = alphaBeta(newBoard, "Y", depth-1, alpha, beta, True)
+                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, True, currentTurn)
             else:
                 if child[0] == "WK":
                     newBoard.WK.updatePos(child[1], child[2])
                 else:
                     newBoard.WR.updatePos(child[1], child[2])
-                val = alphaBeta(newBoard, "X", depth-1, alpha, beta, True)
+                val = alphaBeta(newBoard, "Y", depth-1, alpha, beta, True, currentTurn)
             if val[1] < bestValue:
                 bestValue = val[1]
                 beta = val[1]
@@ -347,19 +363,19 @@ def search(board, player, depth, maxPlayer):
 def testCase(board, alpha, beta):
     temp = None
     temp1 = None
-    for x in range (1,6, 1):
+    for x in range (1,2, 1):
         print("\nDepth: ", x)
         startTime = time.clock()
-        temp = alphaBeta(board, "X", x, alpha, beta, True)
+        temp = alphaBeta(board, "X", x, alpha, beta, True, "X")
         print(temp)
         print("AlphaBeta", time.clock() - startTime, "seconds")
 
-        startTime = time.clock()
-        temp1 = search(board, "X",x,True)
-        print(temp1)
-        print("MiniMax", time.clock() - startTime, "seconds")
+        # startTime = time.clock()
+        # temp1 = search(board, "X",x,True)
+        # print(temp1)
+        # print("MiniMax", time.clock() - startTime, "seconds")
 
-        print("Same return value: ", temp == temp1, "\n\n")
+        # print("Same return value: ", temp == temp1, "\n\n")
 
 
 def Play(moves):
@@ -367,9 +383,9 @@ def Play(moves):
 
 
 temp = Board()
-temp.addPiece("X","WR",0,1)
-temp.addPiece("X","WK",2,5)
-temp.addPiece("Y","BK",1,0)
+temp.addPiece("X","WR",5,4)
+temp.addPiece("X","WK",4,7)
+temp.addPiece("Y","BK",7,5)
 temp.printState()
 
 pos = generateMoves(temp,"X")
@@ -382,6 +398,20 @@ print("check capture function")
 print(temp.canCapture("X"))
 print(temp.canCapture("Y"))
 
+for i in range(0,4):
+	move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
+	temp.move(move[0][0], move[0][1], move[0][2])
+	# move = alphaBeta(temp, "Y", 5, alpha, beta, True, "Y")
+	# temp.move(move[0][0], move[0][1], move[0][2])
+	temp.printState()
 
 
-testCase(temp, alpha, beta)
+# move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
+# print("Print: ", move[0])
+# temp.printState()
+# temp.move(move[0][0], move[0][1], move[0][2])
+# temp.printState()
+#temp.printState()
+#temp.move[0][0].updatePos(move[0][2],move[0][1])
+#temp.printState()
+#testCase(temp, alpha, beta)
