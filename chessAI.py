@@ -391,12 +391,12 @@ print("check capture function")
 print(temp.canCapture("X"))
 print(temp.canCapture("Y"))
 
-for i in range(0,4):
-	move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
-	temp.move(move[0][0], move[0][1], move[0][2])
-	# move = alphaBeta(temp, "Y", 5, alpha, beta, True, "Y")
-	# temp.move(move[0][0], move[0][1], move[0][2])
-	temp.printState()
+# for i in range(0,4):
+# 	move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
+# 	temp.move(move[0][0], move[0][1], move[0][2])
+# 	# move = alphaBeta(temp, "Y", 5, alpha, beta, True, "Y")
+# 	# temp.move(move[0][0], move[0][1], move[0][2])
+# 	temp.printState()
 
 
 # move = alphaBeta(temp, "X", 5, alpha, beta, True, "X")
