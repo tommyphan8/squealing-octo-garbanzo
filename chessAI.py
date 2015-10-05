@@ -138,7 +138,10 @@ class Board:
 		else:
 			kingway = self.BK.getSurrounding()
 			if (self.WK.x, self.WK.y) in kingway:
-				return True
+				return (True, "KING")
+			if self.WR.capture == False and (self.WR.x,self.WR.y) in kingway:
+				return (True, "ROOK")
+			return False
 
 	def isCheckmate(self, player):
 		if(player == "X"):
@@ -281,7 +284,7 @@ def search(board, player, depth, maxPlayer):
 temp = Board()
 temp.addPiece("X","ROOK",0,1)
 temp.addPiece("X","KING",2,5)
-temp.addPiece("Y","KING",0,5)
+temp.addPiece("Y","KING",1,0)
 temp.printState()
 
 pos = generateMoves(temp,"X")
@@ -289,5 +292,9 @@ print(pos)
 print(temp.isCheck("X"))
 print(temp.isCheck("Y"))
 print(temp.isCheckmate("Y"))
+
+print("check capture function")
+print(temp.canCapture("X"))
+print(temp.canCapture("Y"))
 
 print(search(temp, "X",2,True))
