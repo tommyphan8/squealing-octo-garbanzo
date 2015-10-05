@@ -155,7 +155,7 @@ class Board:
 	def isCheckmate(self, player):
 		if(player == "X"):
 			# X player has only a King left
-			if isCheckmate("X") and self.WR.capture == True:
+			if self.isCheck("X") and self.WR.capture == True:
 				temp = self.availablePos(self.WK)
 				dangerZone = self.BK.getSurrounding()
 				for i in temp:
@@ -180,11 +180,11 @@ def printBoard(xK,xR,yK):
     for i in range(0,8):
         for j in range(0,8):
             print("| ",end="")
-            if((i,j) == (xK.x,xK.y)):
+            if((i,j) == (xK.x,xK.y) and xK.capture == False):
                 print("WK ",end="")
-            elif ((i,j)== (xR.x,xR.y)):
+            elif ((i,j)== (xR.x,xR.y) and xR.capture == False):
                 print("WR ",end="")
-            elif((i,j) == (yK.x,yK.y)):
+            elif((i,j) == (yK.x,yK.y) and yK.capture == False):
                 print("BK ",end="")
             else:
                 print("   ",end="")
@@ -311,13 +311,16 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer):
 #
  #       print("Same return value: ", temp == temp1, "\n\n")
 
-def testCase(board, player, alpha, beta):
+def Move(board, player, alpha, beta):
 	temp = alphaBeta(board, player, 5, alpha, beta, True)
 	if temp[0][0] == "BK":
+		#print("Y move")
 		board.BK.updatePos(temp[0][1], temp[0][2])
 	elif temp[0][0] == "WK":
+		#print("X move")
 		board.WK.updatePos(temp[0][1], temp[0][2])
 	else:
+		#print("X move")
 		board.WR.updatePos(temp[0][1], temp[0][2])
 	board.printState()
 	
@@ -331,7 +334,33 @@ def Play(moves, board):
 			print("X win, Checkmate")
 			break
 		else:
-			ymove = alphaBeta(board, "Y", 5, alpha, beta, True)
+			print("Y move")
+			temp = board.canCapture("Y")
+			if temp!= False:
+				if temp[1] == "KING":
+					board.BK.updatePos(board.WK.x,board.WK.y)
+					board.WK.capture = True
+					board.printState()
+					print("Y win")
+					break
+				else:
+					if (board.WR.x, board.WR.y) not in board.WK.getSurrounding(): 
+						board.BK.updatePos(board.WR.x, board.WR.y)
+						board.WR.capture = True
+						board.printState()
+						print("Draw!")
+						break
+			Move(board,"Y", alpha, beta)
+		
+		# X move
+		if board.isCheckmate("X"):
+			print("Y win, Checkmate")
+			break
+		else:
+			print("X move")
+			Move(board,"X", alpha, beta)
+
+		i += 1
 
 
 
@@ -340,21 +369,10 @@ def Play(moves, board):
 
 
 temp = Board()
-temp.addPiece("X","WR",0,3)
-temp.addPiece("X","WK",2,5)
+temp.addPiece("X","WR",0,1)
+temp.addPiece("X","WK",1,5)
 temp.addPiece("Y","BK",1,0)
+print("initial board")
 temp.printState()
 
-pos = generateMoves(temp,"X")
-print(pos)
-print(temp.isCheck("X"))
-print(temp.isCheck("Y"))
-print(temp.isCheckmate("Y"))
-
-print("check capture function")
-print(temp.canCapture("X"))
-print(temp.canCapture("Y"))
-
-
-
-testCase(temp, "Y", alpha, beta)
+Play(2, temp)
