@@ -90,6 +90,7 @@ class Board:
 	def availablePos(self,piece):
 		available = []
 		result = []
+		dangerZone = []
 		if(piece.player == "X"):
 			dangerZone = self.BK.getSurrounding()
 			if(piece.ptype == "WK"):
@@ -97,15 +98,16 @@ class Board:
 			else:
 				available = rookway(piece)
 			for i in available:
-					result.append((piece.ptype, i[0], i[1]))
+				result.append((piece.ptype, i[0], i[1]))
 		else:
 			available = piece.getSurrounding()
 			for i in available:
-					result.append((piece.ptype, i[0], i[1]))
-			dangerZone = rookway(self.WR) + self.WK.getSurrounding()
+				result.append((piece.ptype, i[0], i[1]))
+			dangerZone = self.WK.getSurrounding()
+			dangerZone.extend(rookway(self.WR))
 		for temp in result:
-					if (temp[1],temp[2]) in dangerZone:
-						result.remove(temp)
+			if (temp[1],temp[2]) in dangerZone:
+				result.remove(temp)
 		return result
 
 	def legalMove(self, piece):
@@ -395,9 +397,25 @@ def testCase(board, alpha, beta):
 temp = Board()
 temp.addPiece("X","WR",6,1)
 temp.addPiece("X","WK",1,5)
-temp.addPiece("Y","BK",1,0)
+temp.addPiece("Y","BK",1,3)
 print("initial board")
 temp.printState()
 
+print("rook way")
+print(rookway(temp.WR))
+print("availablePos")
+print(temp.availablePos(temp.BK))
+
 Play(35, temp)
+
+
+
+
+
+
+# pause screen
+import msvcrt as m
+def wait():
+    m.getch()
+wait()
 
