@@ -87,8 +87,7 @@ class Board:
 	def printState(self):
 		printBoard(self.WK,self.WR, self.BK)
 
-	def availablePos(self, piece):
-		#if X player
+	def availablePos(self,piece):
 		available = []
 		result = []
 		dangerZone = []
@@ -103,21 +102,20 @@ class Board:
 					result.append((piece.ptype, i[0], i[1]))
 			elif piece.ptype == "WR" and piece.capture == False:
 				available = rookway(piece)
-				for i in available:
-					if i in dangerZone:
-						available.remove(i)
-				for i in available:
-					result.append((piece.ptype, i[0], i[1]))
 		elif piece.ptype == "BK":
 			available = self.BK.getSurrounding()
 			dangerZone = self.WK.getSurrounding()
 			if self.WR.capture == False:
 				dangerZone.extend(rookway(self.WR))
-			for i in available:
-				if i in dangerZone:
-					available.remove(i)
-			for i in available:
-					result.append((piece.ptype, i[0], i[1]))
+
+		size = len(available)
+		for i in range(size):
+			for temp in available:
+				if temp in dangerZone:
+					available.remove(temp) 
+
+		for i in available:
+			result.append((piece.ptype, i[0], i[1]))
 		return result
 
 
@@ -178,11 +176,13 @@ class Board:
 				return False
 		else:
 			temp = self.availablePos(self.BK)
-			if self.WR.capture == True:
-				dangerZone = self.WK.getSurrounding()
-			else:
+			if not temp:
+				return True
+			if self.WR.capture == False:
 				dangerZone = self.WK.getSurrounding()
 				dangerZone.extend(rookway(self.WR))
+			else:
+				dangerZone = self.WK.getSurrounding()
 			for i in temp:
 				if i in dangerZone:
 					return True
@@ -233,11 +233,15 @@ def heustric(board, currentTurn):
 			dangerZone.extend(rookway(board.WR))
 		if (board.BK.x,board.BK.y) in dangerZone:
 			hvalue -=100000000
+
 		return hvalue
 	else: #player X
 		if board.WR.capture == False:
-			hvalue += 300
-		if board.WR.x ==
+			hvalue += 400
+		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
+		hvalue -= distance*100
+
+		return hvalue
 
 
 
@@ -334,13 +338,13 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
 def Move(board, player, alpha, beta):
 	temp = alphaBeta(board, player, 1, alpha, beta, True, player)
 	if temp[0][0] == "BK":
-		#print("Y move")
+		print("BK move to (",temp[0][1] + 1,",",temp[0][2] +1,")")
 		board.BK.updatePos(temp[0][1], temp[0][2])
 	elif temp[0][0] == "WK":
-		#print("X move")
+		print("WK move to (",temp[0][1] + 1,",",temp[0][2] +1,")")
 		board.WK.updatePos(temp[0][1], temp[0][2])
 	else:
-		#print("X move")
+		print("WR move to (",temp[0][1] + 1,",",temp[0][2] +1,")")
 		board.WR.updatePos(temp[0][1], temp[0][2])
 	board.printState()
 	
@@ -354,7 +358,7 @@ def Play(moves, board):
 			print("X win, Checkmate")
 			break
 		else:
-			print("Y move")
+			print("\nY turn")
 			temp = board.canCapture("Y")
 			if temp!= False:
 				if temp[1] == "KING":
@@ -381,7 +385,7 @@ def Play(moves, board):
 			print("Draw!")
 			break
 		else:
-			print("X move")
+			print("\nX turn")
 			if (board.BK.x, board.BK.y) in board.WK.getSurrounding():
 				board.BK.capture == True
 				board.WK.updatePos(board.BK.x, board.BK.y)
@@ -414,9 +418,9 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",6,1)
-temp.addPiece("X","WK",1,7)
-temp.addPiece("Y","BK",1,3)
+temp.addPiece("X","WR",0,1)
+temp.addPiece("X","WK",2,5)
+temp.addPiece("Y","BK",0,5)
 print("initial board")
 temp.printState()
 
