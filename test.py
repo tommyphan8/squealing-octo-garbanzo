@@ -113,12 +113,9 @@ class Board:
 			dangerZone = self.WK.getSurrounding()
 			if self.WR.capture == False:
 				dangerZone.extend(rookway(self.WR))
-			#available = available - dangerZone
 			for i in available:
 				if i in dangerZone:
 					available.remove(i)
-			#for i in dangerZone:
-			#	available.remove(i)
 			for i in available:
 					result.append((piece.ptype, i[0], i[1]))
 		return result
@@ -220,28 +217,35 @@ def printBoard(xK,xR,yK):
 def heustric(board, currentTurn):
 	blackScore = 0
 	whiteScore = 0
+	hvalue = 0
+	dangerZone = []
+	if currentTurn == "Y": # need to make it attack the rook
+		if board.BK.x == 0 or board.BK.y == 0 or board.BK.x == 7 or board.BK.y == 7:
+			hvalue -= 1000
+		if board.BK.x == 1 or board.BK.y == 1 or board.BK.x == 6 or board.BK.y == 6:
+			hvalue -= 800
+		if board.BK.x == 2 or board.BK.y == 2 or board.BK.x == 5 or board.BK.y == 5:
+			hvalue += 200
+		if board.BK.x == 3 or board.BK.y == 3 or board.BK.x == 4 or board.BK.y == 4:
+			hvalue += 1000
+		dangerZone = board.WK.getSurrounding()
+		if board.WR.capture == False:
+			dangerZone.extend(rookway(board.WR))
+		if (board.BK.x,board.BK.y) in dangerZone:
+			hvalue -=100000000
+		return hvalue
+	else: #player X
+		if board.WR.capture == False:
+			hvalue += 300
+		if board.WR.x ==
 
-	if board.BK.capture == False:
-		blackScore += King
-		blackScore += pieceSquareTableKing[abs((board.BK.x)-7)][board.BK.y]
-
-	if board.WK.capture == False:
-		whiteScore += King
-		whiteScore += pieceSquareTableKing[board.WK.x][board.WK.y]
-
-	if board.WR.capture == False:
-		whiteScore += Rook
-		whiteScore += pieceSquareTableRook[board.WR.x][board.WR.y]	
-
-	if (currentTurn == "Y"):
-		return blackScore - whiteScore
-	else:
-		return whiteScore - blackScore	
 
 
-def heuristicX(board, piece, pos):
-	blackScore = 0
-	whiteScore = 0
+
+
+	
+
+
 
 
 	
@@ -328,7 +332,7 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
 
 
 def Move(board, player, alpha, beta):
-	temp = alphaBeta(board, player, 5, alpha, beta, True, player)
+	temp = alphaBeta(board, player, 1, alpha, beta, True, player)
 	if temp[0][0] == "BK":
 		#print("Y move")
 		board.BK.updatePos(temp[0][1], temp[0][2])
@@ -411,7 +415,7 @@ def testCase(board, alpha, beta):
 
 temp = Board()
 temp.addPiece("X","WR",6,1)
-temp.addPiece("X","WK",1,5)
+temp.addPiece("X","WK",1,7)
 temp.addPiece("Y","BK",1,3)
 print("initial board")
 temp.printState()
