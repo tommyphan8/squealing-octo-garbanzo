@@ -422,12 +422,10 @@ def Play(moves, board):
 				if (board.WK.x,board.WK.y) not in rookway(board.WR):
 					if board.BK.x == 0 or board.BK.x == 7:
 						board.WR.updatePos(board.BK.x,board.WR.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
 					else:
 						board.WR.updatePos(board.WR.x,board.BK.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
+				print("WR move to (",board.WR.x,",",board.WR.y,")")
+				board.printState()
 
 			# if WR is attacked 
 			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
@@ -439,6 +437,9 @@ def Play(moves, board):
 					board.WR.updatePos(0,board.WR.y)
 					print("WR move to (",board.WR.x,",",board.WR.y,")")
 					board.printState()
+
+
+			# use alphaBeta to pick a best move
 			else:
 				Move(board,"X", alpha, beta)
 
@@ -458,9 +459,9 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",7,1)
+temp.addPiece("X","WR",0,1)
 temp.addPiece("X","WK",0,3)
-temp.addPiece("Y","BK",7,5)
+temp.addPiece("Y","BK",7,0)
 print("initial board")
 temp.printState()
 
