@@ -195,6 +195,7 @@ class Board:
 			if self.BK.x == 7:
 				if (self.WK.y == (self.BK.y - 1) or self.WK.y == (self.BK.y +1)) and self.WK.x ==5:
 					return True
+			return False
 
 	def move(self, ptype, y, x):
 		if ptype == "WK":
@@ -340,13 +341,13 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
 def Move(board, player, alpha, beta):
 	temp = alphaBeta(board, player, 1, alpha, beta, True, player)
 	if temp[0][0] == "BK":
-		print("BK move to (",temp[0][1] + 1,",",temp[0][2] +1,")")
+		print("BK move to (",temp[0][1],",",temp[0][2],")")
 		board.BK.updatePos(temp[0][1], temp[0][2])
 	elif temp[0][0] == "WK":
-		print("WK move to (",temp[0][1] + 1,",",temp[0][2] +1,")")
+		print("WK move to (",temp[0][1],",",temp[0][2],")")
 		board.WK.updatePos(temp[0][1], temp[0][2])
 	else:
-		print("WR move to (",temp[0][1] + 1,",",temp[0][2] +1,")")
+		print("WR move to (",temp[0][1],",",temp[0][2],")")
 		board.WR.updatePos(temp[0][1], temp[0][2])
 	board.printState()
 	
@@ -452,7 +453,7 @@ def Play(moves, board):
 					else:
 						Move(board,"X",alpha,beta)
 				elif board.BK.y == 0 or board.BK.y == 7:
-					if board.WR.x != board.BK.x -1 and board.WR.x != board.BK.x +1 and board.WR.x != board.WR.x:
+					if board.WR.x != board.BK.x -1 and board.WR.x != board.BK.x +1 and board.WR.x != board.WK.x:
 						board.WR.updatePos(board.WR.x,board.BK.y)
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
