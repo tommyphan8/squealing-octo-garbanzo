@@ -108,14 +108,17 @@ class Board:
 						available.remove(i)
 				for i in available:
 					result.append((piece.ptype, i[0], i[1]))
-		else:
+		elif piece.ptype == "BK":
 			available = self.BK.getSurrounding()
 			dangerZone = self.WK.getSurrounding()
 			if self.WR.capture == False:
 				dangerZone.extend(rookway(self.WR))
+			#available = available - dangerZone
 			for i in available:
 				if i in dangerZone:
 					available.remove(i)
+			#for i in dangerZone:
+			#	available.remove(i)
 			for i in available:
 					result.append((piece.ptype, i[0], i[1]))
 		return result
@@ -415,10 +418,16 @@ temp.printState()
 
 print("rook way")
 print(rookway(temp.WR))
-print("availablePos for BK")
-print(temp.availablePos(temp.BK))
 print("availablePos for WK")
 print(temp.availablePos(temp.WK))
+print("getSurrounding of WK")
+print(temp.WK.getSurrounding())
+print("availablePos for BK")
+print(temp.availablePos(temp.BK))
+
+
+
+
 Play(35, temp)
 
 
