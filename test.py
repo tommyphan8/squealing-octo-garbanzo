@@ -2,35 +2,10 @@ import math
 import copy
 import time
 
-#http://chessprogramming.wikispaces.com/Simplified+evaluation+function
-#Piece Values for chess piece
-Rook = 500
-King = 20000
 
 alpha = float("-infinity")
 beta = float("infinity")
 
-#Piece-Square Tables 
-pieceSquareTableKing = [[] for i in range(8)]
-pieceSquareTableRook = [[] for i in range(8)]
-
-pieceSquareTableKing[0] = [-50,-40,-30,-20,-20,-30,-40,-50]
-pieceSquareTableKing[1] = [-30,-20,-10,  0,  0,-10,-20,-30]
-pieceSquareTableKing[2] = [-30,-10, 20, 30, 30, 20,-10,-30]
-pieceSquareTableKing[3] = [-30,-10, 30, 40, 40, 30,-10,-30]
-pieceSquareTableKing[4] = [-30,-10, 30, 40, 40, 30,-10,-30]
-pieceSquareTableKing[5] = [-30,-10, 20, 30, 30, 20,-10,-30]
-pieceSquareTableKing[6] = [-30,-30,  0,  0,  0,  0,-30,-30]
-pieceSquareTableKing[7] = [-50,-30,-30,-30,-30,-30,-30,-50]
-
-pieceSquareTableRook[0] = [0,  0,  0,  0,  0,  0,  0,  0]
-pieceSquareTableRook[1] = [5, 10, 10, 10, 10, 10, 10,  5]
-pieceSquareTableRook[2] = [-5,  0,  0,  0,  0,  0,  0, -5]
-pieceSquareTableRook[3] = [-5,  0,  0,  0,  0,  0,  0, -5]
-pieceSquareTableRook[4] = [-5,  0,  0,  0,  0,  0,  0, -5]
-pieceSquareTableRook[5] = [-5,  0,  0,  0,  0,  0,  0, -5]
-pieceSquareTableRook[6] = [-5,  0,  0,  0,  0,  0,  0, -5]
-pieceSquareTableRook[7] = [0,  0,  0,  5,  5,  0,  0,  0]
 
 class Piece:
 	def __init__(self):
@@ -95,11 +70,6 @@ class Board:
 			dangerZone = self.BK.getSurrounding()
 			if piece.ptype == "WK":
 				available = self.WK.getSurrounding()
-				for i in available:
-					if i in dangerZone:
-						available.remove(i)
-				for i in available:
-					result.append((piece.ptype, i[0], i[1]))
 			elif piece.ptype == "WR" and piece.capture == False:
 				available = rookway(piece)
 		elif piece.ptype == "BK":
@@ -188,6 +158,29 @@ class Board:
 					return True
 			return False
 
+	def inCorner(self, player):
+		if player == "Y":
+			if (self.BK.x,self.BK.y) == (0,0) and (self.WK.x,self.WK.y) in [(2,0),(2,1),(0,2),(1,2)]:
+				return True
+			if (self.BK.x,self.BK.y) == (0,7) and (self.WK.x,self.WK.y) in [(0,5),(1,5),(2,7),(2,6)]:
+				return True
+			if (self.BK.x,self.BK.y) == (7,0) and (self.WK.x,self.WK.y) in [(5,0),(5,1),(6,2),(7,2)]:
+				return True
+			if (self.BK.x,self.BK.y) == (7,7) and (self.WK.x,self.WK.y) in [(5,6),(5,7),(6,5),(7,5)]:
+				return True
+			return False
+
+	def inCheckmatePos(self, player):
+		if player == "Y":
+			if self.BK.x == 0 and (self.WK.x,self.WK.y) == (self.BK.x +2,self.BK.y):
+				return True
+			if self.BK.y == 0 and (self.WK.x,self.WK.y) == (self.BK.x,self.BK.y + 2):
+				return True
+			if self.BK.x == 7 and (self.WK.x,self.WK.y) == (self.BK.x -2,self.BK.y):
+				return True
+			if self.BK.y == 7 and (self.WK.x,self.WK.y) == (self.BK.x,self.BK.y - 2):
+				return True
+
 	def move(self, ptype, y, x):
 		if ptype == "WK":
 			self.WK.updatePos(y,x)
@@ -231,28 +224,22 @@ def heustric(board, currentTurn):
 		dangerZone = board.WK.getSurrounding()
 		if board.WR.capture == False:
 			dangerZone.extend(rookway(board.WR))
+			# two lines below will make BK attack the rook
+			distance = math.sqrt(math.pow((board.WR.x - board.BK.x),2) + math.pow((board.WR.y - board.BK.y),2))
+		hvalue += (10 -distance)*10000
 		if (board.BK.x,board.BK.y) in dangerZone:
 			hvalue -=100000000
 
 		return hvalue
 	else: #player X
 		if board.WR.capture == False:
-			hvalue += 400
+			hvalue += 100
 		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
 		hvalue -= distance*100
 
 		return hvalue
 
 
-
-
-
-	
-
-
-
-
-	
 
 
 #WHITE PLAYER CONTAINS TWO PIECE (X)
@@ -392,15 +379,68 @@ def Play(moves, board):
 				board.printState()
 				print("X win")
 				break
-			if (board.BK.x, board.BK.y) in rookway(board.WR):
+			elif (board.BK.x, board.BK.y) in rookway(board.WR):
 				board.BK.capture == True
 				board.WR.updatePos(board.BK.x, board.BK.y)
 				board.printState()
 				print("X win")
 				break
+			# handle corner
+			elif board.inCorner("Y"):
+				if (board.BK.x,board.BK.y) == (0,0):
+					if board.WK.y ==2:
+						if board.WR.x != board.WK.x:
+							board.WR.updatePos(board.WR.x,0)
+					elif board.WK.x == 2:
+						if board.WR.y != board.WK.y:
+							board.WR.updatePos(0,board.WR.y)
+				elif (board.BK.x,board.BK.y) == (7,0):
+					if board.WK.y ==2:
+						if board.WR.x != board.WK.x:
+							board.WR.updatePos(board.WR.x,0)
+					elif board.WK.x == 5:
+						if board.WR.y != board.WK.y:
+							board.WR.updatePos(7,board.WR.y)
+				elif (board.BK.x,board.BK.y) == (0,7):
+					if board.WK.y ==5:
+						if board.WR.x != board.WK.x:
+							board.WR.updatePos(board.WR.x,7)
+					elif board.WK.x == 2:
+						if board.WR.y != board.WK.y:
+							board.WR.updatePos(0,board.WR.y)
+				elif (board.BK.x,board.BK.y) == (7,7):
+					if board.WK.y ==5:
+						if board.WR.x != board.WK.x:
+							board.WR.updatePos(board.WR.x,7)
+					elif board.WK.x == 5:
+						if board.WR.y != board.WK.y:
+							board.WR.updatePos(7,board.WR.y)
+				print("WR move to (",board.WR.x,",",board.WR.y,")")
+				board.printState()
+			# handle checkmate position
+			elif board.inCheckmatePos("Y"):
+				if (board.WK.x,board.WK.y) not in rookway(board.WR):
+					if board.BK.x == 0 or board.BK.x == 7:
+						board.WR.updatePos(board.BK.x,board.WR.y)
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
+					else:
+						board.WR.updatePos(board.WR.x,board.BK.y)
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
 
-
-			Move(board,"X", alpha, beta)
+			# if WR is attacked 
+			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
+				if(board.WR.x <=3):
+					board.WR.updatePos(7,board.WR.y)
+					print("WR move to (",board.WR.x,",",board.WR.y,")")
+					board.printState()
+				elif board.WR.x >=4:
+					board.WR.updatePos(0,board.WR.y)
+					print("WR move to (",board.WR.x,",",board.WR.y,")")
+					board.printState()
+			else:
+				Move(board,"X", alpha, beta)
 
 		i += 1
 
@@ -418,20 +458,14 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",0,1)
-temp.addPiece("X","WK",2,5)
-temp.addPiece("Y","BK",0,5)
+temp.addPiece("X","WR",7,1)
+temp.addPiece("X","WK",0,3)
+temp.addPiece("Y","BK",7,5)
 print("initial board")
 temp.printState()
 
-print("rook way")
-print(rookway(temp.WR))
-print("availablePos for WK")
+
 print(temp.availablePos(temp.WK))
-print("getSurrounding of WK")
-print(temp.WK.getSurrounding())
-print("availablePos for BK")
-print(temp.availablePos(temp.BK))
 
 
 
