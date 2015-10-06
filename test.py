@@ -181,6 +181,21 @@ class Board:
 			if self.BK.y == 7 and (self.WK.x,self.WK.y) == (self.BK.x,self.BK.y - 2):
 				return True
 
+	def inPreCheckmatePos(self, player):
+		if player == "Y":
+			if self.BK.y == 0:
+				if (self.WK.x == (self.BK.x - 1) or self.WK.x == (self.BK.x +1)) and self.WK.y ==2:
+					return True
+			if self.BK.y == 7:
+				if (self.WK.x == (self.BK.x - 1) or self.WK.x == (self.BK.x +1)) and self.WK.y ==5:
+					return True
+			if self.BK.x == 0:
+				if (self.WK.y == (self.BK.y - 1) or self.WK.y == (self.BK.y +1)) and self.WK.x ==2:
+					return True
+			if self.BK.x == 7:
+				if (self.WK.y == (self.BK.y - 1) or self.WK.y == (self.BK.y +1)) and self.WK.x ==5:
+					return True
+
 	def move(self, ptype, y, x):
 		if ptype == "WK":
 			self.WK.updatePos(y,x)
@@ -345,7 +360,8 @@ def Play(moves, board):
 			print("X win, Checkmate")
 			break
 		else:
-			print("\nY turn")
+			print("\nMove #",i+1)
+			print("Y turn")
 			temp = board.canCapture("Y")
 			if temp!= False:
 				if temp[1] == "KING":
@@ -426,6 +442,23 @@ def Play(moves, board):
 						board.WR.updatePos(board.WR.x,board.BK.y)
 				print("WR move to (",board.WR.x,",",board.WR.y,")")
 				board.printState()
+			#handle pre-checkmate position
+			elif board.inPreCheckmatePos("Y"):
+				if board.BK.x == 0 or board.BK.x == 7:
+					if board.WR.y != board.BK.y -1 and board.WR.y != board.BK.y +1 and board.WR.y != board.WK.y:
+						board.WR.updatePos(board.BK.x,board.WR.y)
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
+					else:
+						Move(board,"X",alpha,beta)
+				elif board.BK.y == 0 or board.BK.y == 7:
+					if board.WR.x != board.BK.x -1 and board.WR.x != board.BK.x +1 and board.WR.x != board.WR.x:
+						board.WR.updatePos(board.WR.x,board.BK.y)
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
+					else:
+						Move(board,"X", alpha,beta)
+
 
 			# if WR is attacked 
 			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
@@ -459,8 +492,8 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",0,1)
-temp.addPiece("X","WK",0,3)
+temp.addPiece("X","WR",1,6)
+temp.addPiece("X","WK",5,2)
 temp.addPiece("Y","BK",7,0)
 print("initial board")
 temp.printState()
