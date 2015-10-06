@@ -252,6 +252,8 @@ def heustric(board, currentTurn):
 			hvalue += 100
 		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
 		hvalue -= distance*100
+		if (board.BK.x,board.BK.y) in [(3,3),(3,4),(4,3),(4,4)]:
+			hvalue -= 300
 
 		return hvalue
 
@@ -505,9 +507,9 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",1,6)
-temp.addPiece("X","WK",5,4)
-temp.addPiece("Y","BK",7,0)
+temp.addPiece("X","WR",1,1)
+temp.addPiece("X","WK",2,1)
+temp.addPiece("Y","BK",0,6)
 print("initial board")
 temp.printState()
 
