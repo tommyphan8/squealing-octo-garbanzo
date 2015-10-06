@@ -447,18 +447,30 @@ def Play(moves, board):
 			elif board.inPreCheckmatePos("Y"):
 				if board.BK.x == 0 or board.BK.x == 7:
 					if board.WR.y != board.BK.y -1 and board.WR.y != board.BK.y +1 and board.WR.y != board.WK.y:
-						board.WR.updatePos(board.BK.x,board.WR.y)
+						if board.BK.x == 0:
+							board.WR.updatePos(board.BK.x+1,board.WR.y)
+						else:
+							board.WR.updatePos(board.BK.x -1, board.WR.y)
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
 					else:
 						Move(board,"X",alpha,beta)
 				elif board.BK.y == 0 or board.BK.y == 7:
 					if board.WR.x != board.BK.x -1 and board.WR.x != board.BK.x +1 and board.WR.x != board.WK.x:
-						board.WR.updatePos(board.WR.x,board.BK.y)
+						#if self.BK.x < self.WK.x and self.BK.x < self.WR.x and board.BK.y ==0:
+						#	board.WR.updatePos(board.WR.x,board.BK.y+1)
+						#elif self.BK.x < self.WK.x and self.BK.x < self.WR.x and board.BK.y ==7:
+						#	board.WR.updatePos(board.WR.x,board.BK.y -1)
+						if board.BK.y ==0:
+							board.WR.updatePos(board.WR.x,board.BK.y +1)
+						else:
+							board.WR.updatePos(board.WR.x,board.BK.y-1)
+						#board.WR.updatePos(board.WR.x,board.BK.y)
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
 					else:
 						Move(board,"X", alpha,beta)
+			#handle regular case for rook
 
 
 			# if WR is attacked 
@@ -494,7 +506,7 @@ def testCase(board, alpha, beta):
 
 temp = Board()
 temp.addPiece("X","WR",1,6)
-temp.addPiece("X","WK",5,2)
+temp.addPiece("X","WK",5,4)
 temp.addPiece("Y","BK",7,0)
 print("initial board")
 temp.printState()
