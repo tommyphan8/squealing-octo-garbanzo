@@ -40,8 +40,10 @@ class Piece:
 def rookway(piece):
 	locations = []
 	for i in range(0,8):
-		locations.append((i, piece.y))
-		locations.append((piece.x, i))
+		if (i,piece.y) != (piece.x,piece.y):
+			locations.append((i, piece.y))
+		if (piece.x,i) != (piece.x,piece.y):
+			locations.append((piece.x, i))
 	return locations
 
 class Board:
@@ -70,8 +72,39 @@ class Board:
 			dangerZone = self.BK.getSurrounding()
 			if piece.ptype == "WK":
 				available = self.WK.getSurrounding()
+				if self.WR.capture == False:
+					if (self.WR.x,self.WR.y) in available:
+						available.remove((self.WR.x,self.WR.y))
 			elif piece.ptype == "WR" and piece.capture == False:
 				available = rookway(piece)
+				if (self.WK.x,self.WK.y) in available:
+					available.remove((self.WK.x,self.WK.y))
+				if self.WK.x == self.WR.x:
+					if self.WK.y < self.WR.y:
+						size = len(available)
+						for i in range(size):
+							for temp in available:
+								if temp[1]<self.WK.y:
+									available.remove(temp) 
+					elif self.WK.y > self.WR.y:
+						zize = len(available)
+						for i in range(size):
+							for temp in available:
+								if temp[1]<self.WK.y:
+									available.remove(temp) 
+				if self.WK.y == self.WR.y:
+					if self.WK.x < self.WR.x:
+						size = len(available)
+						for i in range(size):
+							for temp in available:
+								if temp[0]<self.WK.x:
+									available.remove(temp) 
+					elif self.WK.x > self.WR.x:
+						zize = len(available)
+						for i in range(size):
+							for temp in available:
+								if temp[0]>self.WK.x:
+									available.remove(temp) 
 		elif piece.ptype == "BK":
 			available = self.BK.getSurrounding()
 			dangerZone = self.WK.getSurrounding()
@@ -87,8 +120,6 @@ class Board:
 		for i in available:
 			result.append((piece.ptype, i[0], i[1]))
 		return result
-
-
 
 	def legalMove(self, piece):
 		current = (piece.x,piece.y)
@@ -249,9 +280,13 @@ def heustric(board, currentTurn):
 		return hvalue
 	else: #player X
 		if board.WR.capture == False:
-			hvalue += 100
+			hvalue += 1000
 		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
 		hvalue -= distance*100
+		distance = math.sqrt(math.pow((board.WK.x - board.WR.x),2) + math.pow((board.WK.y - board.WR.y),2))
+		hvalue -= distance*100
+		if(board.WR.x,board.WR.y) in board.BK.getSurrounding() and (board.WR.x,board.WR.y) not in board.WK.getSurrounding():
+			hvalue -=100000000
 		if (board.BK.x,board.BK.y) in [(3,3),(3,4),(4,3),(4,4)]:
 			hvalue -= 300
 
@@ -477,7 +512,14 @@ def Play(moves, board):
 
 			# if WR is attacked 
 			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
-				if board.BK.x == 0 and board.WR.x==1:
+				if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
+					Move(board,"X", alpha,beta)
+				elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
+					board.WR.updatePos(board.WR.x -2,board.WR.y)
+				elif board.BK.x < 4 and (board.WR.x +2,board.WR.y) in board.WK.getSurrounding():
+					board.WR.updatePos(board.WR.x +2,board.WR.y)
+
+				elif board.BK.x == 0 and board.WR.x==1:
 					if board.WR.y <=3:
 						board.WR.updatePos(board.WR.x,7)
 					else:
@@ -498,6 +540,60 @@ def Play(moves, board):
 					board.WR.updatePos(0,board.WR.y)
 				print("WR move to (",board.WR.x,",",board.WR.y,")")
 				board.printState()
+
+			#regular case
+			#elif board.BK.x <= 3 and board.BK.y <= 3:
+			#	if board.WK.x > board.BK.x:
+			#		if (board.BK.x + 1,board.WR.y) not in board.BK.getSurrounding():
+			#			board.WR.updatePos(board.BK.x+1,board.WR.y)
+			#		else:
+			#			board.WR.updatePos(board.BK.x+2,board.WR.y)
+			#	elif board.WK.y > board.BK.y:
+			#		if(board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
+			#			board.WR.updatePos(board.WR.x,board.BK.y+1)
+			#		else:
+			#			board.WR.updatePos(board.WR.x,board.BK.y+2)
+			#	print("WR move to (",board.WR.x,",",board.WR.y,")")
+			#	board.printState()
+
+
+			# elif board.BK.x <= board.WK.x and board.BK.x<3 and board.BK.x < board.BK.y:
+			# 	if (board.BK.x + 1,board.WR.y) not in board.BK.getSurrounding() and board.WR.x != board.BK.x +1:
+			# 		board.WR.updatePos(board.BK.x+1,board.WR.y)
+			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
+			# 		board.printState()
+			# elif board.BK.y < board.WK.y and board.BK.y<3:
+			# 	if board.WR.y<board.BK.y:
+			# 		if (board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
+			# 			board.WR.updatePos(board.WR.x,board.BK.y+1)
+			# 		elif (board.WR.x,board.BK.y+1) in board.BK.getSurrounding() and (board.WR.x,board.BK.y+1) in board.WK.getSurrounding():
+			# 			board.WR.updatePos(board.WR.x,board.BK.y+1)
+			# 		else:
+			# 			Move(board,"X", alpha,beta)
+			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
+			# 		board.printState()
+			# 	elif board.WR.y == board.BK.y +1:
+			# 		Move(board,"X", alpha,beta)
+			# 	elif board.WR.y>board.BK.y and (board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
+			# 		board.WR.updatePos(board.WR.x,board.BK.y+1)
+			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
+			# 		board.printState()
+			# 	elif(board.WR.x,board.BK.y-1) not in board.BK.getSurrounding() and board.WR.y != board.BK.y+1:
+			# 		board.WR.updatePos(board.WR.x,board.BK.y-1)
+			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
+			# 		board.printState()
+
+			# elif board.BK.x>4 and board.BK.y < board.WK.y:
+			# 	if board.WR.y == board.BK.y+1 and board.BK.x == board.WK.x:
+			# 		board.WR.updatePos(board.BK.x-1,board.WR.y)
+			# 	elif (board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
+			# 		board.WR.updatePos(board.WR.x,board.BK.y+1)
+			# 	print("WR move to (",board.WR.x,",",board.WR.y,")")
+			# 	board.printState()
+
+
+
+
 
 
 			# use alphaBeta to pick a best move
@@ -520,14 +616,18 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",6,1)
-temp.addPiece("X","WK",5,6)
-temp.addPiece("Y","BK",0,6)
+temp.addPiece("X","WR",7,1)
+temp.addPiece("X","WK",4,4)
+temp.addPiece("Y","BK",2,2)
+
+#temp.addPiece("X","WR",4,3)
+#temp.addPiece("X","WK",4,4)
+#temp.addPiece("Y","BK",3,1)
 print("initial board")
 temp.printState()
 
 
-print(temp.availablePos(temp.WK))
+print(temp.availablePos(temp.WR))
 
 
 
