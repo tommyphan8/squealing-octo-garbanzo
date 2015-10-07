@@ -477,14 +477,27 @@ def Play(moves, board):
 
 			# if WR is attacked 
 			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
-				if(board.WR.x <=3):
+				if board.BK.x == 0 and board.WR.x==1:
+					if board.WR.y <=3:
+						board.WR.updatePos(board.WR.x,7)
+					else:
+						board.WR.updatePos(board.WR.x,0)
+				elif board.BK.x == 7 and board.WR.x == 6:
+					if board.WR.y <=3:
+						board.WR.updatePos(board.WR.x,7)
+					else:
+						board.WR.updatePos(board.WR.x,0)
+				elif board.BK.y == 0 and board.WR.y == 1:
+					if board.WR.x <=3:
+						board.WR.updatePos(7,board.WR.y)
+					else:
+						board.WR.updatePos(0,board.WR.y)
+				elif(board.WR.x <=3):
 					board.WR.updatePos(7,board.WR.y)
-					print("WR move to (",board.WR.x,",",board.WR.y,")")
-					board.printState()
-				elif board.WR.x >=4:
+				else:
 					board.WR.updatePos(0,board.WR.y)
-					print("WR move to (",board.WR.x,",",board.WR.y,")")
-					board.printState()
+				print("WR move to (",board.WR.x,",",board.WR.y,")")
+				board.printState()
 
 
 			# use alphaBeta to pick a best move
@@ -507,8 +520,8 @@ def testCase(board, alpha, beta):
 
 
 temp = Board()
-temp.addPiece("X","WR",1,1)
-temp.addPiece("X","WK",2,1)
+temp.addPiece("X","WR",6,1)
+temp.addPiece("X","WK",5,6)
 temp.addPiece("Y","BK",0,6)
 print("initial board")
 temp.printState()
