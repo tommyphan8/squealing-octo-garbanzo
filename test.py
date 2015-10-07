@@ -299,8 +299,8 @@ def heustric(board, currentTurn):
 		if board.WR.capture == False:
 			dangerZone.extend(board.availablePos(board.WR))
 			# two lines below will make BK attack the rook
-			distance = math.sqrt(math.pow((board.WR.x - board.BK.x),2) + math.pow((board.WR.y - board.BK.y),2))
-		hvalue += (10 -distance)*10000
+			#distance = math.sqrt(math.pow((board.WR.x - board.BK.x),2) + math.pow((board.WR.y - board.BK.y),2))
+		#hvalue += (10 -distance)*10000
 		if (board.BK.x,board.BK.y) in dangerZone:
 			hvalue -=100000000
 
