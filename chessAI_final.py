@@ -274,9 +274,15 @@ class Board:
 			return False
 
 	def inFacingPos(self):
-		if abs(self.WK.x - self.BK.x) == 2 and self.WK.y in (self.BK.y,self.BK.y-1,self.BK.y+1):
+		if abs(self.WK.x - self.BK.x) == 2 and abs(self.BK.y - self.WK.y) <=1 and self.WK.y in (self.BK.y,self.BK.y-1,self.BK.y+1):
 			return True
-		elif abs(self.WK.y - self.BK.y) == 2 and self.WR.x in (self.BK.x,self.BK.x -1,self.BK.x +1):
+		elif abs(self.WK.y - self.BK.y) == 2 and abs(self.WK.x - self.BK.x)<=1 and self.WR.x in (self.BK.x,self.BK.x -1,self.BK.x +1):
+			return True
+		else:
+			return False
+
+	def inEdge(self):
+		if self.BK.x == 0 or self.BK.x == 7 or	self.BK.y ==0 or self.BK.y ==7:
 			return True
 		else:
 			return False
@@ -345,12 +351,12 @@ def heustric(board, currentTurn):
 	else: #player X
 		if board.WR.capture == False:
 			hvalue += 1000
-		distance1 = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
-		#hvalue -= distance*1000
-		distance2 = math.sqrt(math.pow((4 - board.BK.x),2) + math.pow((4 - board.BK.y),2))
-		hvalue += (4.7 * distance2 + 1.6*(14- distance1))*1000
-		#distance = math.sqrt(math.pow((board.WK.x - board.WR.x),2) + math.pow((board.WK.y - board.WR.y),2))
-		#hvalue -= distance*100
+		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
+		hvalue -= distance*1000
+		#distance2 = math.sqrt(math.pow((4 - board.BK.x),2) + math.pow((4 - board.BK.y),2))
+		#hvalue += (4.7 * distance2 + 1.6*(14- distance1))*1000
+		distance = math.sqrt(math.pow((board.WK.x - board.WR.x),2) + math.pow((board.WK.y - board.WR.y),2))
+		hvalue -= distance*100
 		if(board.WR.x,board.WR.y) in board.BK.getSurrounding() and (board.WR.x,board.WR.y) not in board.WK.getSurrounding():
 			hvalue -=100000000
 		if (board.BK.x,board.BK.y) in [(3,3),(3,4),(4,3),(4,4)]:
@@ -605,6 +611,62 @@ def Play(moves, board):
 						else:
 							board.WR.updatePos(board.WR.x,board.BK.y-1)
 						#board.WR.updatePos(board.WR.x,board.BK.y)
+						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
+					else:
+						Move(board,"X", alpha,beta)
+
+			# BK in the edge
+			elif board.inEdge():
+				if board.BK.y == 0:
+					if board.WR.y == 1:
+						if board.BK.x < 4:
+							if board.WR.x !=7:
+								board.WR.updatePos(7,1)	
+								output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
+								print("WR move to (",board.WR.x,",",board.WR.y,")")
+								board.printState()
+							else:
+								Move(board,"X", alpha,beta)
+						else:		
+							if board.WR.x !=0:
+								board.WR.updatePos(0,1)	
+								output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
+								print("WR move to (",board.WR.x,",",board.WR.y,")")
+								board.printState()
+							else:
+								Move(board,"X", alpha,beta)
+					elif (board.WR.x,1) not in board.BK.getSurrounding():
+						board.WR.updatePos(board.WR.x,1)
+						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
+					else:
+						Move(board,"X", alpha,beta)
+				elif board.BK.y == 7:
+					if board.WR.y == 6:
+						if (board.WR.x,board.WR.y) in board.BK.getSurrounding():
+							if board.BK.x < 4:
+								if board.WR.x !=7:
+									board.WR.updatePos(7,6)	
+									output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
+									print("WR move to (",board.WR.x,",",board.WR.y,")")
+									board.printState()
+								else:
+									Move(board,"X", alpha,beta)
+							else:		
+								if board.WR.x !=0:
+									board.WR.updatePos(0,6)	
+									output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
+									print("WR move to (",board.WR.x,",",board.WR.y,")")
+									board.printState()
+								else:
+									Move(board,"X", alpha,beta)
+						else:
+							Move(board,"X", alpha,beta)
+					elif board.WR.y !=6 and  (board.WR.x,6) not in board.BK.getSurrounding():
+						board.WR.updatePos(board.WR.x,6)
 						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()

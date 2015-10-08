@@ -549,7 +549,17 @@ def Play(moves, board):
 					else:
 						Move(board,"X",alpha,beta)
 				else:
-					Move(board,"X",alpha,beta)
+					if ((board.WR.x,board.WR.y) not in board.BK.getSurrounding()):
+						board.WR.updatePos(board.WR.x,board.BK.y)
+						print("WR move to (",board.WR.x,",",board.WR.y,")")
+						board.printState()
+					elif board.WR.y == board.BK.y+1 :
+						if board.BK.x<4:
+							board.WR.updatePos(board.BK.x+1,board.WR.y)
+						else:
+							board.WR.updatePos(board.BK.x -1,board.WR.y)
+					else:
+						Move(board,"X",alpha,beta)
 			
 			# BK in the edge
 			elif board.inEdge():
