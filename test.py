@@ -255,6 +255,16 @@ class Board:
 					return True
 			return False
 
+	def inFacingPos(self):
+		if abs(self.WK.x - self.BK.x) == 2 and self.WK.y in (self.BK.y,self.BK.y-1,self.BK.y+1):
+			return True
+		elif abs(self.WK.y - self.BK.y) == 2 and self.WR.x in (self.BK.x,self.BK.x -1,self.BK.x +1):
+			return True
+		else:
+			return False
+
+
+
 	def move(self, ptype, y, x):
 		if ptype == "WK":
 			self.WK.updatePos(y,x)
@@ -308,10 +318,12 @@ def heustric(board, currentTurn):
 	else: #player X
 		if board.WR.capture == False:
 			hvalue += 1000
-		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
-		hvalue -= distance*1000
-		distance = math.sqrt(math.pow((board.WK.x - board.WR.x),2) + math.pow((board.WK.y - board.WR.y),2))
-		hvalue -= distance*100
+		distance1 = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
+		#hvalue -= distance*1000
+		distance2 = math.sqrt(math.pow((4 - board.BK.x),2) + math.pow((4 - board.BK.y),2))
+		hvalue += (4.7 * distance2 + 1.6*(14- distance1))*1000
+		#distance = math.sqrt(math.pow((board.WK.x - board.WR.x),2) + math.pow((board.WK.y - board.WR.y),2))
+		#hvalue -= distance*100
 		if(board.WR.x,board.WR.y) in board.BK.getSurrounding() and (board.WR.x,board.WR.y) not in board.WK.getSurrounding():
 			hvalue -=100000000
 		if (board.BK.x,board.BK.y) in [(3,3),(3,4),(4,3),(4,4)]:
@@ -501,7 +513,7 @@ def Play(moves, board):
 			# handle checkmate position
 			elif board.inCheckmatePos("Y"):
 				if (board.WK.x,board.WK.y) not in rookway(board.WR):
-					if board.BK.x == 0 or board.BK.x == 7 and (board.BK.x,board.WR.y) not in board.BK.getSurrounding():
+					if board.BK.x == 0 or board.BK.x == 7 and ((board.BK.x,board.WR.y) not in board.BK.getSurrounding()):
 						board.WR.updatePos(board.BK.x,board.WR.y)
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
@@ -517,39 +529,7 @@ def Play(moves, board):
 					else:
 						Move(board,"X",alpha,beta)
 
-			# if WR is attacked 
-			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
-				if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
-					Move(board,"X", alpha,beta)
-				elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
-					board.WR.updatePos(board.WR.x -2,board.WR.y)
-				elif board.BK.x < 4 and (board.WR.x +2,board.WR.y) in board.WK.getSurrounding():
-					board.WR.updatePos(board.WR.x +2,board.WR.y)
-
-				elif board.BK.x == 0 and board.WR.x==1:
-					if board.WR.y <=3:
-						board.WR.updatePos(board.WR.x,7)
-					else:
-						board.WR.updatePos(board.WR.x,0)
-				elif board.BK.x == 7 and board.WR.x == 6:
-					if board.WR.y <=3:
-						board.WR.updatePos(board.WR.x,7)
-					else:
-						board.WR.updatePos(board.WR.x,0)
-				elif board.BK.y == 0 and board.WR.y == 1:
-					if board.WR.x <=3:
-						board.WR.updatePos(7,board.WR.y)
-					else:
-						board.WR.updatePos(0,board.WR.y)
-				elif(board.WR.x <=3):
-					if board.WR.y <=3:
-						board.WR.updatePos(board.WR.x,7)
-					else:
-						board.WR.updatePos(board.WR.x,0)
-				else:
-					board.WR.updatePos(board.WR.x,0)
-				print("WR move to (",board.WR.x,",",board.WR.y,")")
-				board.printState()
+			
 				
 			#handle pre-checkmate position
 			elif board.inPreCheckmatePos("Y"):
@@ -584,22 +564,111 @@ def Play(moves, board):
 						board.printState()
 					else:
 						Move(board,"X", alpha,beta)
-			#handle regular case for rook
-			elif (board.BK.x < 4):
-				if board.BK.x<board.BK.y or board.BK.x<7- board.BK.y:
-					if (board.WR.x,board.WR.y)!= (board.BK.x+1,board.WR.y) and (board.BK.x+1,board.WR.y) not in board.BK.getSurrounding():
-						board.WR.updatePos(board.BK.x+1,board.WR.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
-					elif (board.WR.x,board.WR.y)== (board.BK.x+1,board.WR.y):
-						Move(board,"X", alpha,beta)
-					elif (board.WK.x,board.WK.y) not in [(3,3),(3,4),(4,4),(4,3)]:
-						Move(board,"X", alpha,beta)
+
+			# if WR is attacked 
+			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
+				if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
+					Move(board,"X", alpha,beta)
+				elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
+					board.WR.updatePos(board.WR.x -2,board.WR.y)
+				elif board.BK.x < 4 and (board.WR.x +2,board.WR.y) in board.WK.getSurrounding():
+					board.WR.updatePos(board.WR.x +2,board.WR.y)
+
+				elif board.BK.x == 0 and board.WR.x==1:
+					if board.WR.y <=3:
+						board.WR.updatePos(board.WR.x,7)
 					else:
+						board.WR.updatePos(board.WR.x,0)
+				elif board.BK.x == 7 and board.WR.x == 6:
+					if board.WR.y <=3:
+						board.WR.updatePos(board.WR.x,7)
+					else:
+						board.WR.updatePos(board.WR.x,0)
+				elif board.BK.y == 0 and board.WR.y == 1:
+					if board.WR.x <=3:
+						board.WR.updatePos(7,board.WR.y)
+					else:
+						board.WR.updatePos(0,board.WR.y)
+				elif(board.WR.x <=3):
+					if board.WR.y <=3:
+						board.WR.updatePos(board.WR.x,7)
+					else:
+						board.WR.updatePos(board.WR.x,0)
+				else:
+					board.WR.updatePos(board.WR.x,0)
+				print("WR move to (",board.WR.x,",",board.WR.y,")")
+				board.printState()
+
+			#nandle facing case
+			elif board.inFacingPos():
+				if (board.WR.x < board.WK.x and board.WR.x >board.BK.x) or (board.WR.x > board.WK.x and board.WR.x <board.BK.x):
+					if board.WK.y == board.BK.y:
 						if board.BK.y < 4:
-							board.WR.updatePos(board.WR.x,7)
+							board.WR.updatePos(board.WR.x,board.WK.y+1)
 						else:
-							board.WR.updatePos(board.WR.x,0)
+							board.WR.updatePos(board.WR.x,board.WK.y-1)
+					else:
+						board.WR.updatePos(board.WR.x,board.WK.y)
+					print("WR move to (",board.WR.x,",",board.WR.y,")")
+					board.printState()
+				elif (board.WR.y < board.WK.y and board.WR.y >board.BK.y) or (board.WR.y > board.WK.y and board.WR.y <board.BK.y):
+					if board.WK.x == board.BK.x:
+						if board.BK.x < 4:
+							board.WR.updatePos(board.WK.x+1,board.WR.y)
+						else:
+							board.WR.updatePos(board.WK.x-1,board.WR.y)
+					else:
+						board.WR.updatePos(board.WK.x,board.WR.y)
+					print("WR move to (",board.WR.x,",",board.WR.y,")")
+					board.printState()
+				elif (abs(board.BK.y -board.WK.y) ==2):
+					if board.BK.y<board.WK.y:
+						if (board.WR.x,board.WK.y-1) in rookway(board.WR):
+							board.WR.updatePos(board.WR.x,board.WK.y -1)
+							print("WR move to (",board.WR.x,",",board.WR.y,")")
+							board.printState()
+						else:
+							Move(board,"X", alpha,beta)
+					else:
+						if (board.WR.x,board.WK.y+1) in rookway(board.WR):
+							board.WR.updatePos(board.WR.x,board.WK.y +1)
+							print("WR move to (",board.WR.x,",",board.WR.y,")")
+							board.printState()
+						else:
+							Move(board,"X", alpha,beta)
+				elif abs(board.BK.x-board.WK.x)==2:
+					if board.BK.x<board.WK.x:
+						if (board.WK.x-1,board.WR.y) in rookway(board.WR):
+							board.WR.updatePos(board.WK.x-1,board.WR.y)
+							print("WR move to (",board.WR.x,",",board.WR.y,")")
+							board.printState()
+						else:
+							Move(board,"X", alpha,beta)
+					else:
+						if (board.WK.x+1,board.WR.y) in rookway(board.WR):
+							board.WR.updatePos(board.WK.x+1,board.WR.y)
+							print("WR move to (",board.WR.x,",",board.WR.y,")")
+							board.printState()
+						else:
+							Move(board,"X", alpha,beta)					
+
+
+			#handle regular case for rook
+			# elif (board.BK.x < 4):
+			# 	if board.BK.x<board.BK.y or board.BK.x<7- board.BK.y:
+			# 		if (board.WR.x,board.WR.y)!= (board.BK.x+1,board.WR.y) and (board.BK.x+1,board.WR.y) not in board.BK.getSurrounding():
+			# 			board.WR.updatePos(board.BK.x+1,board.WR.y)
+			# 			print("WR move to (",board.WR.x,",",board.WR.y,")")
+			# 			board.printState()
+			# 		elif (board.WR.x,board.WR.y)== (board.BK.x+1,board.WR.y):
+			# 			Move(board,"X", alpha,beta)
+			# 		elif (board.WK.x,board.WK.y) not in [(3,3),(3,4),(4,4),(4,3)]:
+			# 			Move(board,"X", alpha,beta)
+			# 		else:
+			# 			if board.BK.y < 4:
+			# 				board.WR.updatePos(board.WR.x,7)
+			# 			else:
+			# 				board.WR.updatePos(board.WR.x,0)
 
 
 			
