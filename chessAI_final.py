@@ -465,6 +465,7 @@ def Play(moves, board):
 		# Y move first
 		if board.isCheckmate("Y"):
 			output.write("X win, Checkmate\n")
+			board.BK.capture == True
 			print("X win, Checkmate")
 			break
 		else:
@@ -710,6 +711,14 @@ def Play(moves, board):
 				Move(board,"X", alpha, beta)
 
 		i += 1
+	if board.BK.capture == False:
+		output.write("Draw!\n")
+		print("Draw!")
+		output.write("Number of moves made: " + str(i) + "\n")
+		print("Number of moves made: ", i)
+	else:
+		output.write("Number of moves made: " + str(i) + "\n")
+		print("Number of moves made: ", i)
 
 
 def testCase(board, alpha, beta):
