@@ -2,9 +2,26 @@ import math
 import copy
 import time
 
+fileWrite = "output.txt"
+fileRead = "testCase.txt"
 
 alpha = float("-infinity")
 beta = float("infinity")
+
+def read(fileRead):
+	f = open(fileRead, "r")
+	temp = []
+	for line in f:
+		temp.append((line[0], line[2], line[4]-1, line[6]-1))
+
+	f.close()
+	return temp
+
+
+def write(line, file):
+	output = open(fileWrite, "a")
+	output.write(line + "\n")
+	output.close()
 
 
 class Piece:

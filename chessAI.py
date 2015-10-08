@@ -67,6 +67,9 @@ def rookway(piece):
 	for i in range(0,8):
 		locations.append((i, piece.y))
 		locations.append((piece.x, i))
+
+	locations = [x for x in moves if x != (piece.x,piece.y)]
+    locations = [x for x in moves if x != (piece.x,piece.y)]
 	return locations
 
 class Board:
