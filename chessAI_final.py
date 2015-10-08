@@ -2,26 +2,26 @@ import math
 import copy
 import time
 
-fileWrite = "output.txt"
+fileWrite = "gameResult.txt"
 fileRead = "testCase.txt"
 
 alpha = float("-infinity")
 beta = float("infinity")
 
+output = open(fileWrite, "w")
+
 def read(fileRead):
 	f = open(fileRead, "r")
 	temp = []
 	for line in f:
-		temp.append((line[0], line[2], line[4]-1, line[6]-1))
+		if line[0] == "x":
+			temp.append((line[0].upper(), "W"+line[2], int(line[4])-1, int(line[6])-1))
+		else:
+			temp.append((line[0].upper(), "B"+line[2], int(line[4])-1, int(line[6])-1))
+		#temp.append((line[0], line[2], int(line[4])-1, int(line[6])-1))
 
 	f.close()
 	return temp
-
-
-def write(line, file):
-	output = open(fileWrite, "a")
-	output.write(line + "\n")
-	output.close()
 
 
 class Piece:
@@ -46,6 +46,7 @@ class Piece:
 		return (self.x,self.y)
 
 	def printPiece(self):
+		output.write(self.player + self.ptype + "(" + self.x + "," + self.y +")\n")
 		print(self.player,self.ptype,"(",self.x,",",self.y,")")
 
 	def getSurrounding(self):
@@ -292,19 +293,28 @@ class Board:
 
 		
 def printBoard(xK,xR,yK):
+	#output.write("wtf")
     print("+----+----+----+----+----+----+----+----+")
+    output.write("+----+----+----+----+----+----+----+----+\n")
     for i in range(0,8):
         for j in range(0,8):
             print("| ",end="")
+            output.write("| " + "")
             if((i,j) == (xK.x,xK.y) and xK.capture == False):
                 print("WK ",end="")
+                output.write("WK " + "")
             elif ((i,j)== (xR.x,xR.y) and xR.capture == False):
                 print("WR ",end="")
+                output.write("WR " +"")
             elif((i,j) == (yK.x,yK.y) and yK.capture == False):
                 print("BK ",end="")
+                output.write("BK " +"")
             else:
                 print("   ",end="")
+                output.write("   " +"")
         print("|\n+----+----+----+----+----+----+----+----+")
+        output.write("|\n+----+----+----+----+----+----+----+----+\n")
+
 
 
 
@@ -434,12 +444,15 @@ def alphaBeta(board, player, depth, alpha, beta, maxPlayer, currentTurn):
 def Move(board, player, alpha, beta):
 	temp = alphaBeta(board, player, 1, alpha, beta, True, player)
 	if temp[0][0] == "BK":
+		output.write("BK move to (" +str(temp[0][1]) +"," +str(temp[0][2]) +")\n")
 		print("BK move to (",temp[0][1],",",temp[0][2],")")
 		board.BK.updatePos(temp[0][1], temp[0][2])
 	elif temp[0][0] == "WK":
+		output.write("WK move to (" + str(temp[0][1]) + "," + str(temp[0][2]) + ")\n")
 		print("WK move to (",temp[0][1],",",temp[0][2],")")
 		board.WK.updatePos(temp[0][1], temp[0][2])
 	else:
+		output.write("WR move to (" + str(temp[0][1]) + "," + str(temp[0][2]) + ")\n")
 		print("WR move to (",temp[0][1],",",temp[0][2],")")
 		board.WR.updatePos(temp[0][1], temp[0][2])
 	board.printState()
@@ -451,10 +464,13 @@ def Play(moves, board):
 	while i<moves:
 		# Y move first
 		if board.isCheckmate("Y"):
+			output.write("X win, Checkmate\n")
 			print("X win, Checkmate")
 			break
 		else:
+			output.write("\nMove #"+str(i+1)+"\n")
 			print("\nMove #",i+1)
+			output.write("Y turn\n")
 			print("Y turn")
 			temp = board.canCapture("Y")
 			if temp!= False:
@@ -462,6 +478,7 @@ def Play(moves, board):
 					board.BK.updatePos(board.WK.x,board.WK.y)
 					board.WK.capture = True
 					board.printState()
+					output.write("Y win\n")
 					print("Y win")
 					break
 				else:
@@ -469,30 +486,36 @@ def Play(moves, board):
 						board.BK.updatePos(board.WR.x, board.WR.y)
 						board.WR.capture = True
 						board.printState()
+						output.write("Draw!\n")
 						print("Draw!")
 						break
 			Move(board,"Y", alpha, beta)
 		
 		# X move
 		if board.isCheckmate("X"): # almost never happen
+			output.write("Y win, Checkmate\n")
 			print("Y win, Checkmate")
 			break
 		if board.WR.capture == True:
 			board.printState()
+			output.write("Draw!\n")
 			print("Draw!")
 			break
 		else:
+			output.write("\nX turn\n")
 			print("\nX turn")
 			if (board.BK.x, board.BK.y) in board.WK.getSurrounding():
 				board.BK.capture == True
 				board.WK.updatePos(board.BK.x, board.BK.y)
 				board.printState()
+				output.write("X win\n")
 				print("X win")
 				break
 			elif (board.BK.x, board.BK.y) in board.availablePos(board.WR):
 				board.BK.capture == True
 				board.WR.updatePos(board.BK.x, board.BK.y)
 				board.printState()
+				output.write("X win\n")
 				print("X win")
 				break
 			# handle corner
@@ -525,6 +548,7 @@ def Play(moves, board):
 					elif board.WK.x == 5:
 						if board.WR.y != board.WK.y:
 							board.WR.updatePos(7,board.WR.y)
+				output.write("WR move to (" +str(board.WR.x) +"," +str(board.WR.y)+")\n")
 				print("WR move to (",board.WR.x,",",board.WR.y,")")
 				board.printState()
 			# handle checkmate position
@@ -532,10 +556,12 @@ def Play(moves, board):
 				if (board.WK.x,board.WK.y) not in rookway(board.WR):
 					if board.BK.x == 0 or board.BK.x == 7 and ((board.BK.x,board.WR.y) not in board.BK.getSurrounding()):
 						board.WR.updatePos(board.BK.x,board.WR.y)
+						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
 					elif (board.WR.x,board.BK.y) not in board.BK.getSurrounding():
 						board.WR.updatePos(board.WR.x,board.BK.y)
+						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
 					elif board.WR.y == board.BK.y+1 :
@@ -562,6 +588,7 @@ def Play(moves, board):
 							board.WR.updatePos(board.BK.x+1,board.WR.y)
 						else:
 							board.WR.updatePos(board.BK.x -1, board.WR.y)
+						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
 					else:
@@ -577,6 +604,7 @@ def Play(moves, board):
 						else:
 							board.WR.updatePos(board.WR.x,board.BK.y-1)
 						#board.WR.updatePos(board.WR.x,board.BK.y)
+						output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 						print("WR move to (",board.WR.x,",",board.WR.y,")")
 						board.printState()
 					else:
@@ -613,6 +641,7 @@ def Play(moves, board):
 						board.WR.updatePos(board.WR.x,0)
 				else:
 					board.WR.updatePos(board.WR.x,0)
+				output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 				print("WR move to (",board.WR.x,",",board.WR.y,")")
 				board.printState()
 
@@ -626,6 +655,7 @@ def Play(moves, board):
 							board.WR.updatePos(board.WR.x,board.WK.y-1)
 					else:
 						board.WR.updatePos(board.WR.x,board.WK.y)
+					output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 					print("WR move to (",board.WR.x,",",board.WR.y,")")
 					board.printState()
 				elif (board.WR.y < board.WK.y and board.WR.y >board.BK.y) or (board.WR.y > board.WK.y and board.WR.y <board.BK.y):
@@ -636,12 +666,14 @@ def Play(moves, board):
 							board.WR.updatePos(board.WK.x-1,board.WR.y)
 					else:
 						board.WR.updatePos(board.WK.x,board.WR.y)
+					output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 					print("WR move to (",board.WR.x,",",board.WR.y,")")
 					board.printState()
 				elif (abs(board.BK.y -board.WK.y) ==2):
 					if board.BK.y<board.WK.y:
 						if (board.WR.x,board.WK.y-1) in rookway(board.WR):
 							board.WR.updatePos(board.WR.x,board.WK.y -1)
+							output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 							print("WR move to (",board.WR.x,",",board.WR.y,")")
 							board.printState()
 						else:
@@ -649,6 +681,7 @@ def Play(moves, board):
 					else:
 						if (board.WR.x,board.WK.y+1) in rookway(board.WR):
 							board.WR.updatePos(board.WR.x,board.WK.y +1)
+							output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 							print("WR move to (",board.WR.x,",",board.WR.y,")")
 							board.printState()
 						else:
@@ -657,6 +690,7 @@ def Play(moves, board):
 					if board.BK.x<board.WK.x:
 						if (board.WK.x-1,board.WR.y) in rookway(board.WR):
 							board.WR.updatePos(board.WK.x-1,board.WR.y)
+							output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 							print("WR move to (",board.WR.x,",",board.WR.y,")")
 							board.printState()
 						else:
@@ -664,85 +698,11 @@ def Play(moves, board):
 					else:
 						if (board.WK.x+1,board.WR.y) in rookway(board.WR):
 							board.WR.updatePos(board.WK.x+1,board.WR.y)
+							output.write("WR move to ("+str(board.WR.x)+","+str(board.WR.y)+")\n")
 							print("WR move to (",board.WR.x,",",board.WR.y,")")
 							board.printState()
 						else:
 							Move(board,"X", alpha,beta)					
-
-
-			#handle regular case for rook
-			# elif (board.BK.x < 4):
-			# 	if board.BK.x<board.BK.y or board.BK.x<7- board.BK.y:
-			# 		if (board.WR.x,board.WR.y)!= (board.BK.x+1,board.WR.y) and (board.BK.x+1,board.WR.y) not in board.BK.getSurrounding():
-			# 			board.WR.updatePos(board.BK.x+1,board.WR.y)
-			# 			print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 			board.printState()
-			# 		elif (board.WR.x,board.WR.y)== (board.BK.x+1,board.WR.y):
-			# 			Move(board,"X", alpha,beta)
-			# 		elif (board.WK.x,board.WK.y) not in [(3,3),(3,4),(4,4),(4,3)]:
-			# 			Move(board,"X", alpha,beta)
-			# 		else:
-			# 			if board.BK.y < 4:
-			# 				board.WR.updatePos(board.WR.x,7)
-			# 			else:
-			# 				board.WR.updatePos(board.WR.x,0)
-
-
-			
-
-			#regular case
-			#elif board.BK.x <= 3 and board.BK.y <= 3:
-			#	if board.WK.x > board.BK.x:
-			#		if (board.BK.x + 1,board.WR.y) not in board.BK.getSurrounding():
-			#			board.WR.updatePos(board.BK.x+1,board.WR.y)
-			#		else:
-			#			board.WR.updatePos(board.BK.x+2,board.WR.y)
-			#	elif board.WK.y > board.BK.y:
-			#		if(board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
-			#			board.WR.updatePos(board.WR.x,board.BK.y+1)
-			#		else:
-			#			board.WR.updatePos(board.WR.x,board.BK.y+2)
-			#	print("WR move to (",board.WR.x,",",board.WR.y,")")
-			#	board.printState()
-
-
-			# elif board.BK.x <= board.WK.x and board.BK.x<3 and board.BK.x < board.BK.y:
-			# 	if (board.BK.x + 1,board.WR.y) not in board.BK.getSurrounding() and board.WR.x != board.BK.x +1:
-			# 		board.WR.updatePos(board.BK.x+1,board.WR.y)
-			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 		board.printState()
-			# elif board.BK.y < board.WK.y and board.BK.y<3:
-			# 	if board.WR.y<board.BK.y:
-			# 		if (board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
-			# 			board.WR.updatePos(board.WR.x,board.BK.y+1)
-			# 		elif (board.WR.x,board.BK.y+1) in board.BK.getSurrounding() and (board.WR.x,board.BK.y+1) in board.WK.getSurrounding():
-			# 			board.WR.updatePos(board.WR.x,board.BK.y+1)
-			# 		else:
-			# 			Move(board,"X", alpha,beta)
-			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 		board.printState()
-			# 	elif board.WR.y == board.BK.y +1:
-			# 		Move(board,"X", alpha,beta)
-			# 	elif board.WR.y>board.BK.y and (board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
-			# 		board.WR.updatePos(board.WR.x,board.BK.y+1)
-			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 		board.printState()
-			# 	elif(board.WR.x,board.BK.y-1) not in board.BK.getSurrounding() and board.WR.y != board.BK.y+1:
-			# 		board.WR.updatePos(board.WR.x,board.BK.y-1)
-			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 		board.printState()
-
-			# elif board.BK.x>4 and board.BK.y < board.WK.y:
-			# 	if board.WR.y == board.BK.y+1 and board.BK.x == board.WK.x:
-			# 		board.WR.updatePos(board.BK.x-1,board.WR.y)
-			# 	elif (board.WR.x,board.BK.y+1) not in board.BK.getSurrounding():
-			# 		board.WR.updatePos(board.WR.x,board.BK.y+1)
-			# 	print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 	board.printState()
-
-
-
-
 
 
 			# use alphaBeta to pick a best move
@@ -764,39 +724,75 @@ def testCase(board, alpha, beta):
 
 
 
-temp = Board()
-# temp.addPiece("X","WR",7,1)
-# temp.addPiece("X","WK",4,4)
-# temp.addPiece("Y","BK",2,2)
+# temp = Board()
 
-temp.addPiece("X","WR",5,4)
-temp.addPiece("X","WK",4,5)
-temp.addPiece("Y","BK",6,3)
-print(temp.availablePos(temp.WR))
-print(temp.WK.getSurrounding())
-print(temp.availablePos(temp.BK))
-#temp.addPiece("X","WR",4,3)
-#temp.addPiece("X","WK",4,4)
-#temp.addPiece("Y","BK",3,1)
-print("initial board")
-temp.printState()
+# listPieces = read(fileRead)
+# for x in listPieces:
+# 	temp.addPiece(x[0], x[1], x[3], x[2])
+
+# output.write("initial board\n")
+# print("initial board")
+# temp.printState()
+
+def main():
+	
+	temp = Board()
+	listPieces = read(fileRead)
+	
+	command = input("Enter a command: (Play) ")
+	if command == "Play":
+		test = input("Is this a test?: Y/N ")
+		if test == "Y":
+			numMoves = input("Enter maximum number of moves: (default is 35) ")
+			
+			for x in range(0,3):
+				temp.addPiece(listPieces[x][0], listPieces[x][1], listPieces[x][3], listPieces[x][2])
+				#temp.addPiece(x[0], x[1], x[3], x[2])
+			output.write("Game Started\n")
+			print("Game Started")
+			output.write("Testcase1: ")
+			print("Testcase1: ", end="")
+			for x in range(0,3):
+				output.write(str(listPieces[x]))
+				print(listPieces[x], end = "")
+
+			output.write("\nInitial board\n")
+			print("\nInitial board")
+			temp.printState()
+			Play(int(numMoves), temp)
+
+
+			temp = Board()
+
+			for x in range(3,6):
+				temp.addPiece(listPieces[x][0], listPieces[x][1], listPieces[x][3], listPieces[x][2])
+			output.write("\nGame Started\n")
+			print("\nGame Started")
+			output.write("Testcase2: ")
+			print("Testcase2: ", end="")
+			for x in range(0,3):
+				output.write(str(listPieces[x]))
+				print(listPieces[x], end = "")
+
+			output.write("\nInitial board\n")
+			print("\nInitial board")
+			temp.printState()
+			Play(int(numMoves), temp)
+
+
+		else:
+			print("GoodBye!")	
+	else:
+		print("Starting Champion Game!")
+	output.close()	
 
 
 
-
-
-
-
-Play(35, temp)
-
-
-
-
-
+main()
 
 # pause screen
-import msvcrt as m
-def wait():
-    m.getch()
-wait()
+# import msvcrt as m
+# def wait():
+#     m.getch()
+# wait()
 
