@@ -256,9 +256,9 @@ class Board:
 			return False
 
 	def inFacingPos(self):
-		if abs(self.WK.x - self.BK.x) == 2 and abs(self.BK.y - self.WK.y) <=1 and self.WK.y in (self.BK.y,self.BK.y-1,self.BK.y+1):
+		if abs(self.WK.x - self.BK.x) == 2 and abs(self.BK.y - self.WK.y) <=1:# and self.WK.y in (self.BK.y,self.BK.y-1,self.BK.y+1):
 			return True
-		elif abs(self.WK.y - self.BK.y) == 2 and abs(self.WK.x - self.BK.x)<=1 and self.WR.x in (self.BK.x,self.BK.x -1,self.BK.x +1):
+		elif abs(self.WK.y - self.BK.y) == 2 and abs(self.WK.x - self.BK.x)<=1:# and self.WR.x in (self.BK.x,self.BK.x -1,self.BK.x +1):
 			return True
 		else:
 			return False
@@ -268,6 +268,18 @@ class Board:
 			return True
 		else:
 			return False
+
+	def isSpecialCheckmate(self):
+		if self.BK.y == 0 or self.BK.y ==7:
+			if self.WR.x in (self.BK.x+1,self.BK.x-1):
+				return True
+			else:
+				return False
+		else:
+			if self.WR.y in (self.BK.y+1,self.BK.y-1):
+				return True
+			else:
+				return False
 
 
 
@@ -325,7 +337,7 @@ def heustric(board, currentTurn):
 		if board.WR.capture == False:
 			hvalue += 1000
 		distance = math.sqrt(math.pow((board.WK.x - board.BK.x),2) + math.pow((board.WK.y - board.BK.y),2))
-		hvalue -= distance*1000
+		hvalue -= distance*10000
 		#distance2 = math.sqrt(math.pow((4 - board.BK.x),2) + math.pow((4 - board.BK.y),2))
 		#hvalue += (4.7 * distance2 + 1.6*(14- distance1))*1000
 		distance = math.sqrt(math.pow((board.WK.x - board.WR.x),2) + math.pow((board.WK.y - board.WR.y),2))
@@ -434,6 +446,312 @@ def Move(board, player, alpha, beta):
 	board.printState()
 	
 
+	
+
+def PrintWR(board):
+	print("WR move to (",board.WR.x,",",board.WR.y,")")
+	board.printState()
+
+def HandleCheckmate(board):
+	print("handle checkmate")
+	if board.BK.x == 0 or board.BK.x == 7:
+		if ((board.BK.x,board.WR.y) not in board.BK.getSurrounding()):
+			board.WR.updatePos(board.BK.x,board.WR.y)
+			PrintWR(board)
+		elif board.WR.y == board.BK.y+1 :
+			if board.BK.x<4:
+				board.WR.updatePos(board.BK.x+1,board.WR.y)
+				PrintWR(board)
+			else:
+				board.WR.updatePos(board.BK.x -1,board.WR.y)
+				PrintWR(board)
+		else:
+			Move(board,"X",alpha,beta)
+	else: # BK.y == 0  or BK.y ==7
+		if ((board.WR.x,board.WR.y) not in board.BK.getSurrounding()):
+			board.WR.updatePos(board.WR.x,board.BK.y)
+			PrintWR(board)
+		elif board.WR.y == board.BK.y+1 : # rook in danger zone
+			if board.BK.x<4:
+				if (board.WR.x,board.WR.y) != (board.BK.x+1,board.WR.y):
+					board.WR.updatePos(board.BK.x+1,board.WR.y)
+					PrintWR(board)
+				else:
+					board.WR.updatePos(7,board.WR.y)
+					PrintWR(board)
+
+			else:
+				board.WR.updatePos(board.BK.x -1,board.WR.y)
+				PrintWR(board)
+		else:
+			Move(board,"X",alpha,beta)
+
+
+def HandleCorner(board):
+	print("handle corner")
+	if (board.BK.x,board.BK.y) == (0,0):
+		if board.WK.y ==2:
+			if board.WR.x != board.WK.x:
+				board.WR.updatePos(board.WR.x,0)
+		elif board.WK.x == 2:
+			if board.WR.y != board.WK.y:
+				board.WR.updatePos(0,board.WR.y)
+	elif (board.BK.x,board.BK.y) == (7,0):
+		if board.WK.y ==2:
+			if board.WR.x != board.WK.x:
+				board.WR.updatePos(board.WR.x,0)
+		elif board.WK.x == 5:
+			if board.WR.y != board.WK.y:
+				board.WR.updatePos(7,board.WR.y)
+	elif (board.BK.x,board.BK.y) == (0,7):
+		if board.WK.y ==5:
+			if board.WR.x != board.WK.x:
+				board.WR.updatePos(board.WR.x,7)
+		elif board.WK.x == 2:
+			if board.WR.y != board.WK.y:
+				board.WR.updatePos(0,board.WR.y)
+	elif (board.BK.x,board.BK.y) == (7,7):
+		if board.WK.y ==5:
+			if board.WR.x != board.WK.x:
+				board.WR.updatePos(board.WR.x,7)
+		elif board.WK.x == 5:
+			if board.WR.y != board.WK.y:
+				board.WR.updatePos(7,board.WR.y)
+	print("WR move to (",board.WR.x,",",board.WR.y,")")
+	board.printState()
+
+def HandleFacing(board):
+	print("handle facing")
+	if (board.WR.x < board.WK.x and board.WR.x >board.BK.x) or (board.WR.x > board.WK.x and board.WR.x <board.BK.x):
+		if board.WK.y == board.BK.y:
+			if board.BK.y < 4:
+				if (board.WR.x,board.WK.y+1) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WR.x,board.WK.y+1)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				if (board.WR.x,board.WK.y-1) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WR.x,board.WK.y-1)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+		else:
+			if (board.WR.x,board.WK.y) != (board.WR.x,board.WR.y):
+				board.WR.updatePos(board.WR.x,board.WK.y)
+				PrintWR(board)
+			else: 
+				Move(board,"X", alpha,beta)
+	elif (board.WR.y < board.WK.y and board.WR.y >board.BK.y) or (board.WR.y > board.WK.y and board.WR.y <board.BK.y):
+		if board.WK.x == board.BK.x:
+			if board.BK.x < 4:
+				if (board.WK.x+1,board.WR.y) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WK.x+1,board.WR.y)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				if (board.WK.x-1,board.WR.y) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WK.x-1,board.WR.y)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+		else: # WK and BK not in the same line
+			if (board.WK.x,board.WR.y) != (board.WR.x,board.WR.y):
+				board.WR.updatePos(board.WK.x,board.WR.y)
+				PrintWR(board)
+			else:
+				board.WR.updatePos(board.WR.x,board.BK.y+1)
+				PrintWR(board)
+
+	elif (abs(board.BK.y -board.WK.y) ==2):
+		if board.BK.y<board.WK.y:
+			if (board.WR.x,board.WK.y-1) in rookway(board.WR):
+				if (board.WR.x,board.WK.y -1) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WR.x,board.WK.y -1)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				board.WR.updatePos(board.WR.x,board.BK.y+1)
+				PrintWR(board)
+		else: # BK on the right hand side of the rook
+			if (board.WR.x,board.WK.y+1) in rookway(board.WR):
+				if (board.WR.x,board.WK.y +1) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WR.x,board.WK.y +1)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				board.WR.updatePos(board.WR.x,board.BK.y-1)
+				# if board.BK.y < board.WK.y:
+				# 	board.WR.updatePos(board.WR.x,board.BK.y+1)
+				# else;
+				# 	board
+	elif abs(board.BK.x-board.WK.x)==2:
+		if board.BK.x<board.WK.x:
+			if (board.WK.x-1,board.WR.y) in rookway(board.WR):
+				if (board.WK.x-1,board.WR.y) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WK.x-1,board.WR.y)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				Move(board,"X", alpha,beta)
+		else:
+			if (board.WK.x+1,board.WR.y) in rookway(board.WR):
+				if (board.WK.x+1,board.WR.y) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WK.x+1,board.WR.y)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)	
+			else:
+				Move(board,"X", alpha,beta)	
+
+def HandleEdge(board):
+	print("handle edge")
+	if board.BK.y == 0:
+		if board.WR.y == 1:
+			if (board.WR.x,board.WR.y) in board.BK.getSurrounding():
+				if board.BK.x < 4:
+					if board.WR.x !=7:
+						board.WR.updatePos(7,1)
+						PrintWR(board)
+					else:
+						Move(board,"X", alpha,beta)
+				else:		
+					if board.WR.x !=0:
+						board.WR.updatePos(0,1)	
+						PrintWR(board)
+					else:
+						Move(board,"X", alpha,beta)
+		elif (board.WR.x,1) not in board.BK.getSurrounding():
+			board.WR.updatePos(board.WR.x,1)
+			PrintWR(board)
+		else:
+			Move(board,"X", alpha,beta)
+	elif board.BK.y == 7:
+		if board.WR.y == 6:
+			if (board.WR.x,board.WR.y) in board.BK.getSurrounding():
+				if board.BK.x < 4:
+					if board.WR.x !=7:
+						board.WR.updatePos(7,6)	
+						PrintWR(board)
+					else:
+						Move(board,"X", alpha,beta)
+						PrintWR(board)
+				else:		
+					if board.WR.x !=0:
+						board.WR.updatePos(0,6)	
+						PrintWR(board)
+					else:
+						Move(board,"X", alpha,beta)
+			else:
+				Move(board,"X", alpha,beta)
+		elif board.WR.y !=6 and  (board.WR.x,6) not in board.BK.getSurrounding():
+			board.WR.updatePos(board.WR.x,6)
+			PrintWR(board)
+		else:
+			Move(board,"X", alpha,beta)
+	elif board.BK.x ==0:
+		if board.WR.x == 1:
+			if board.BK.y < 4:
+				if board.WR.y != 7:
+					board.WR.updatePos(1,7)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha, beta)
+			else:
+				if board.WR.x != 0:
+					board.WR.updatePos(1,0)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha, beta)
+		elif (1,board.WR.y) not in board.BK.getSurrounding():
+			board.WR.updatePos(1,board.WR.y)
+			PrintWR(board)
+		else:
+			Move(board,"X", alpha, beta)
+	else:
+		if board.WR.x ==6:
+			if(board.WR.x,board.WR.y) in board.BK.getSurrounding():
+				if board.BK.y < 4:
+					if board.WR.y != 7:
+						board.WR.updatePos(6,7)
+						PrintWR(board)
+					else:
+						Move(board, "X", alpha, beta)
+				else:
+					if board.WR.y != 0:
+						board.WR.updatePos(6,0)
+						PrintWR(board)
+					else:
+						Move(board,"X", alpha, beta)
+			else:
+				Move(board,"X", alpha, beta)
+
+def HandleUnderAttack(board):
+	print("handle under attacked")
+	if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
+		Move(board,"X", alpha,beta)
+	elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
+		board.WR.updatePos(board.WR.x -2,board.WR.y)
+	elif board.BK.x < 4 and (board.WR.x +2,board.WR.y) in board.WK.getSurrounding():
+		board.WR.updatePos(board.WR.x +2,board.WR.y)
+
+	elif board.BK.x == 0 and board.WR.x==1:
+		if board.WR.y <=3:
+			board.WR.updatePos(board.WR.x,7)
+		else:
+			board.WR.updatePos(board.WR.x,0)
+	elif board.BK.x == 7 and board.WR.x == 6:
+		if board.WR.y <=3:
+			board.WR.updatePos(board.WR.x,7)
+		else:
+			board.WR.updatePos(board.WR.x,0)
+	elif board.BK.y == 0 and board.WR.y == 1:
+		if board.WR.x <=3:
+			board.WR.updatePos(7,board.WR.y)
+		else:
+			board.WR.updatePos(0,board.WR.y)
+	elif(board.WR.x <=3):
+		if board.WR.y <=3:
+			board.WR.updatePos(board.WR.x,7)
+		else:
+			board.WR.updatePos(board.WR.x,0)
+	else:
+		board.WR.updatePos(board.WR.x,0)
+	PrintWR(board)
+
+def HandlePreCheckmate(board):
+	print("handle pre-checkmate")
+	if board.BK.x == 0 or board.BK.x == 7:
+		if board.WR.x == 1 or board.WR.x ==6:
+			#if (board.WR.x,board.WR.y) in board.WK.getSurrounding():
+			#	Move(board,"X",alpha,beta)
+			#else:
+			Move(board,"X",alpha,beta)
+
+		elif board.WR.y != board.BK.y -1 and board.WR.y != board.BK.y +1 and board.WR.y != board.WK.y:
+			if board.BK.x == 0:
+				board.WR.updatePos(board.BK.x+1,board.WR.y)
+			else:
+				board.WR.updatePos(board.BK.x -1, board.WR.y)
+			PrintWR(board)
+		else:
+			Move(board,"X",alpha,beta)
+	elif board.BK.y == 0 or board.BK.y == 7:
+		if board.WR.y == 1 or board.WR.y ==6:
+			Move(board,"X", alpha,beta)
+		elif board.WR.x != board.BK.x - 1 and board.WR.x != board.BK.x +1 and board.WR.x != board.WK.x:
+			if board.BK.y ==0:
+				board.WR.updatePos(board.WR.x,board.BK.y+1)
+			else:
+				board.WR.updatePos(board.WR.x,board.BK.y-1)
+			PrintWR(board)
+		else:
+			Move(board,"X",alpha,beta)
+
 
 def Play(moves, board):
 	i = 0
@@ -486,286 +804,31 @@ def Play(moves, board):
 				break
 			# handle corner
 			elif board.inCorner("Y"):
-				if (board.BK.x,board.BK.y) == (0,0):
-					if board.WK.y ==2:
-						if board.WR.x != board.WK.x:
-							board.WR.updatePos(board.WR.x,0)
-					elif board.WK.x == 2:
-						if board.WR.y != board.WK.y:
-							board.WR.updatePos(0,board.WR.y)
-				elif (board.BK.x,board.BK.y) == (7,0):
-					if board.WK.y ==2:
-						if board.WR.x != board.WK.x:
-							board.WR.updatePos(board.WR.x,0)
-					elif board.WK.x == 5:
-						if board.WR.y != board.WK.y:
-							board.WR.updatePos(7,board.WR.y)
-				elif (board.BK.x,board.BK.y) == (0,7):
-					if board.WK.y ==5:
-						if board.WR.x != board.WK.x:
-							board.WR.updatePos(board.WR.x,7)
-					elif board.WK.x == 2:
-						if board.WR.y != board.WK.y:
-							board.WR.updatePos(0,board.WR.y)
-				elif (board.BK.x,board.BK.y) == (7,7):
-					if board.WK.y ==5:
-						if board.WR.x != board.WK.x:
-							board.WR.updatePos(board.WR.x,7)
-					elif board.WK.x == 5:
-						if board.WR.y != board.WK.y:
-							board.WR.updatePos(7,board.WR.y)
-				print("WR move to (",board.WR.x,",",board.WR.y,")")
-				board.printState()
+				HandleCorner(board)
+			
+			#handle checkmate Position
+			elif board.inCheckmatePos("Y") and not board.isSpecialCheckmate():
+				HandleCheckmate(board)
 
-			# handle checkmate position
-			# elif board.inCheckmatePos("Y"):
-			# 	if board.BK.x == 0 or board.BK.x == 7 and ((board.BK.x,board.WR.y) not in board.BK.getSurrounding()):
-			# 			board.WR.updatePos(board.BK.x,board.WR.y)
-			# 			print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 			board.printState()
-			# 	elif (board.WR.x,board.BK.y) not in board.BK.getSurrounding():
-			# 		board.WR.updatePos(board.WR.x,board.BK.y)
-			# 		print("WR move to (",board.WR.x,",",board.WR.y,")")
-			# 		board.printState()
-			# 	elif board.WR.y == board.BK.y+1 :
-			# 		if board.BK.x<4:
-			# 			board.WR.updatePos(board.BK.x+1,board.WR.y)
-			# 		else:
-			# 			board.WR.updatePos(board.BK.x -1,board.WR.y)
-			# 	else:
-			# 		Move(board,"X",alpha,beta)	
-			
-			elif board.inCheckmatePos("Y"):
-				if board.BK.x == 0 or board.BK.x == 7:
-					if ((board.BK.x,board.WR.y) not in board.BK.getSurrounding()):
-						board.WR.updatePos(board.BK.x,board.WR.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
-					elif board.WR.y == board.BK.y+1 :
-						if board.BK.x<4:
-							board.WR.updatePos(board.BK.x+1,board.WR.y)
-						else:
-							board.WR.updatePos(board.BK.x -1,board.WR.y)
-					else:
-						Move(board,"X",alpha,beta)
-				else:
-					if ((board.WR.x,board.WR.y) not in board.BK.getSurrounding()):
-						board.WR.updatePos(board.WR.x,board.BK.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
-					elif board.WR.y == board.BK.y+1 :
-						if board.BK.x<4:
-							board.WR.updatePos(board.BK.x+1,board.WR.y)
-						else:
-							board.WR.updatePos(board.BK.x -1,board.WR.y)
-					else:
-						Move(board,"X",alpha,beta)
-			
 			# BK in the edge
 			elif board.inEdge():
-				if board.BK.y == 0:
-					if board.WR.y == 1:
-						if board.BK.x < 4:
-							if board.WR.x !=7:
-								board.WR.updatePos(7,1)	
-							else:
-								Move(board,"X", alpha,beta)
-						else:		
-							if board.WR.x !=0:
-								board.WR.updatePos(0,1)	
-							else:
-								Move(board,"X", alpha,beta)
-					elif (board.WR.x,1) not in board.BK.getSurrounding():
-						board.WR.updatePos(board.WR.x,1)
-					else:
-						Move(board,"X", alpha,beta)
-				elif board.BK.y == 7:
-					if board.WR.y == 6:
-						if (board.WR.x,board.WR.y) in board.BK.getSurrounding():
-							if board.BK.x < 4:
-								if board.WR.x !=7:
-									board.WR.updatePos(7,6)	
-								else:
-									Move(board,"X", alpha,beta)
-							else:		
-								if board.WR.x !=0:
-									board.WR.updatePos(0,6)	
-								else:
-									Move(board,"X", alpha,beta)
-						else:
-							Move(board,"X", alpha,beta)
-					elif board.WR.y !=6 and  (board.WR.x,6) not in board.BK.getSurrounding():
-						board.WR.updatePos(board.WR.x,6)
-					else:
-						Move(board,"X", alpha,beta)
-					
+				HandleEdge(board)
+				
 			#handle pre-checkmate position
 			elif board.inPreCheckmatePos("Y"):
-				if board.BK.x == 0 or board.BK.x == 7:
-					if board.WR.x == 1 or board.WR.x ==6:
-						#if (board.WR.x,board.WR.y) in board.WK.getSurrounding():
-						#	Move(board,"X",alpha,beta)
-						#else:
-						Move(board,"X",alpha,beta)
-
-					elif board.WR.y != board.BK.y -1 and board.WR.y != board.BK.y +1 and board.WR.y != board.WK.y:
-						if board.BK.x == 0:
-							board.WR.updatePos(board.BK.x+1,board.WR.y)
-						else:
-							board.WR.updatePos(board.BK.x -1, board.WR.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
-					else:
-						Move(board,"X",alpha,beta)
-				elif board.BK.y == 0 or board.BK.y == 7:
-					if board.WR.x != board.BK.x -1 and board.WR.x != board.BK.x +1 and board.WR.x != board.WK.x:
-						#if self.BK.x < self.WK.x and self.BK.x < self.WR.x and board.BK.y ==0:
-						#	board.WR.updatePos(board.WR.x,board.BK.y+1)
-						#elif self.BK.x < self.WK.x and self.BK.x < self.WR.x and board.BK.y ==7:
-						#	board.WR.updatePos(board.WR.x,board.BK.y -1)
-						if board.BK.y ==0:
-							board.WR.updatePos(board.WR.x,board.BK.y +1)
-						else:
-							board.WR.updatePos(board.WR.x,board.BK.y-1)
-						#board.WR.updatePos(board.WR.x,board.BK.y)
-						print("WR move to (",board.WR.x,",",board.WR.y,")")
-						board.printState()
-					else:
-						Move(board,"X", alpha,beta)
-
-			
+				HandlePreCheckmate(board)
+										
 			#handle facing case
 			elif board.inFacingPos():
-				if (board.WR.x < board.WK.x and board.WR.x >board.BK.x) or (board.WR.x > board.WK.x and board.WR.x <board.BK.x):
-					if board.WK.y == board.BK.y:
-						if board.BK.y < 4:
-							if (board.WR.x,board.WK.y+1) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WR.x,board.WK.y+1)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-						else:
-							if (board.WR.x,board.WK.y-1) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WR.x,board.WK.y-1)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-					else:
-						if (board.WR.x,board.WK.y) != (board.WR.x,board.WR.y):
-							board.WR.updatePos(board.WR.x,board.WK.y)
-							print("WR move to (",board.WR.x,",",board.WR.y,")")
-							board.printState()
-						else: 
-							Move(board,"X", alpha,beta)
-				elif (board.WR.y < board.WK.y and board.WR.y >board.BK.y) or (board.WR.y > board.WK.y and board.WR.y <board.BK.y):
-					if board.WK.x == board.BK.x:
-						if board.BK.x < 4:
-							if (board.WK.x+1,board.WR.y) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WK.x+1,board.WR.y)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-						else:
-							if (board.WK.x-1,board.WR.y) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WK.x-1,board.WR.y)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-					else:
-						if (board.WK.x,board.WR.y) != (board.WR.x,board.WR.y):
-							board.WR.updatePos(board.WK.x,board.WR.y)
-							print("WR move to (",board.WR.x,",",board.WR.y,")")
-							board.printState()
-						else:
-							Move(board,"X", alpha,beta)
-
-				elif (abs(board.BK.y -board.WK.y) ==2):
-					if board.BK.y<board.WK.y:
-						if (board.WR.x,board.WK.y-1) in rookway(board.WR):
-							if (board.WR.x,board.WK.y -1) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WR.x,board.WK.y -1)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-						else:
-							Move(board,"X", alpha,beta)
-					else:
-						if (board.WR.x,board.WK.y+1) in rookway(board.WR):
-							if (board.WR.x,board.WK.y +1) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WR.x,board.WK.y +1)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-						else:
-							Move(board,"X", alpha,beta)
-				elif abs(board.BK.x-board.WK.x)==2:
-					if board.BK.x<board.WK.x:
-						if (board.WK.x-1,board.WR.y) in rookway(board.WR):
-							if (board.WK.x-1,board.WR.y) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WK.x-1,board.WR.y)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)
-						else:
-							Move(board,"X", alpha,beta)
-					else:
-						if (board.WK.x+1,board.WR.y) in rookway(board.WR):
-							if (board.WK.x+1,board.WR.y) != (board.WR.x,board.WR.y):
-								board.WR.updatePos(board.WK.x+1,board.WR.y)
-								print("WR move to (",board.WR.x,",",board.WR.y,")")
-								board.printState()
-							else:
-								Move(board,"X", alpha,beta)	
-						else:
-							Move(board,"X", alpha,beta)	
-
+				HandleFacing(board)
 
 			# if WR is attacked 
 			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
-				if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
-					Move(board,"X", alpha,beta)
-				elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
-					board.WR.updatePos(board.WR.x -2,board.WR.y)
-				elif board.BK.x < 4 and (board.WR.x +2,board.WR.y) in board.WK.getSurrounding():
-					board.WR.updatePos(board.WR.x +2,board.WR.y)
-
-				elif board.BK.x == 0 and board.WR.x==1:
-					if board.WR.y <=3:
-						board.WR.updatePos(board.WR.x,7)
-					else:
-						board.WR.updatePos(board.WR.x,0)
-				elif board.BK.x == 7 and board.WR.x == 6:
-					if board.WR.y <=3:
-						board.WR.updatePos(board.WR.x,7)
-					else:
-						board.WR.updatePos(board.WR.x,0)
-				elif board.BK.y == 0 and board.WR.y == 1:
-					if board.WR.x <=3:
-						board.WR.updatePos(7,board.WR.y)
-					else:
-						board.WR.updatePos(0,board.WR.y)
-				elif(board.WR.x <=3):
-					if board.WR.y <=3:
-						board.WR.updatePos(board.WR.x,7)
-					else:
-						board.WR.updatePos(board.WR.x,0)
-				else:
-					board.WR.updatePos(board.WR.x,0)
-				print("WR move to (",board.WR.x,",",board.WR.y,")")
-				board.printState()
-
-			
-				
+				HandleUnderAttack(board)		
 
 			# use alphaBeta to pick a best move
 			else:
+				print("handle normal case")
 				Move(board,"X", alpha, beta)
 
 		i += 1
@@ -788,15 +851,29 @@ temp = Board()
 # temp.addPiece("X","WK",4,4)
 # temp.addPiece("Y","BK",2,2)
 
-temp.addPiece("X","WR",5,6)
-temp.addPiece("X","WK",6,5)
-temp.addPiece("Y","BK",4,7)
-print(temp.availablePos(temp.WR))
-print(temp.WK.getSurrounding())
-print(temp.availablePos(temp.BK))
-#temp.addPiece("X","WR",4,3)
-#temp.addPiece("X","WK",4,4)
-#temp.addPiece("Y","BK",3,1)
+temp.addPiece("X","WR",0,0)
+temp.addPiece("X","WK",7,7)
+temp.addPiece("Y","BK",1,1)
+
+# temp.addPiece("X","WR",5,5)
+# temp.addPiece("X","WK",4,4)
+# temp.addPiece("Y","BK",2,2)
+
+# temp.addPiece("X","WR",0,1)
+# temp.addPiece("X","WK",7,7)
+# temp.addPiece("Y","BK",2,2)
+
+
+# temp.addPiece("X","WR",5,6)
+# temp.addPiece("X","WK",6,5)
+# temp.addPiece("Y","BK",4,7)
+
+# print(temp.availablePos(temp.WR))
+# print(temp.WK.getSurrounding())
+# print(temp.availablePos(temp.BK))
+# temp.addPiece("X","WR",4,3)
+# temp.addPiece("X","WK",4,4)
+# temp.addPiece("Y","BK",3,1)
 print("initial board")
 temp.printState()
 
