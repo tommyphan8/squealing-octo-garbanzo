@@ -643,13 +643,13 @@ def HandleEdge(board):
 		if board.WR.y == 1:
 			if (board.WR.x,board.WR.y) in board.BK.getSurrounding() or (board.WR.x-1,board.WR.y) in board.WR.getSurrounding() or (board.WR.x+1,board.WR.y) in board.WR.getSurrounding():
 				if board.BK.x < 4:
-					if board.WR.x !=7 and (7,1) in board.availablePos(board.WR):
+					if board.WR.x !=7:
 						board.WR.updatePos(7,1)
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:		
-					if board.WR.x !=0 and (0,1) in board.availablePos(board.WR):
+					if board.WR.x !=0:
 						board.WR.updatePos(0,1)	
 						PrintWR(board)
 					else:
@@ -663,13 +663,13 @@ def HandleEdge(board):
 		if board.WR.y == 6:
 			if (board.WR.x,board.WR.y) in board.BK.getSurrounding() or (board.WR.x-1,board.WR.y) in board.WR.getSurrounding() or (board.WR.x+1,board.WR.y) in board.WR.getSurrounding():
 				if board.BK.x < 4:
-					if board.WR.x !=7 and (7,6) in board.availablePos(board.WR):
+					if board.WR.x !=7:
 						board.WR.updatePos(7,6)	
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:		
-					if board.WR.x !=0 and (0,6) in board.availablePos(board.WR):
+					if board.WR.x !=0:
 						board.WR.updatePos(0,6)	
 						PrintWR(board)
 					else:
@@ -686,13 +686,13 @@ def HandleEdge(board):
 		if board.WR.x ==1:
 			if (board.WR.x, board.WR.y) in board.BK.getSurrounding() or (board.WR.x,board.WR.y+1) in board.WR.getSurrounding() or (board.WR.x,board.WR.y-1) in board.WR.getSurrounding():
 				if board.BK.y <4:
-					if board.WR.y !=7 and (1,7) in board.availablePos(board.WR):
+					if board.WR.y !=7:
 						board.WR.updatePos(1,7)
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:
-					if board.WR.y !=0 and (1,0) in board.availablePos(board.WR):
+					if board.WR.y !=0:
 						board.WR.updatePos(1,0)
 						PrintWR(board)
 					else:
@@ -709,13 +709,13 @@ def HandleEdge(board):
 		if board.WR.x ==6:
 			if (board.WR.x, board.WR.y) in board.BK.getSurrounding() or (board.WR.x, board.WR.y+1) in board.BK.getSurrounding() or (board.WR.x, board.WR.y-1) in board.BK.getSurrounding():
 				if board.BK.y <4:
-					if board.WR.y !=7 and (6,7) in board.availablePos(board.WR):
+					if board.WR.y !=7:
 						board.WR.updatePos(6,7)
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:
-					if board.WR.y !=0 and (6,0) in board.availablePos(board.WR):
+					if board.WR.y !=0:
 						board.WR.updatePos(6,0)
 						PrintWR(board)
 					else:
