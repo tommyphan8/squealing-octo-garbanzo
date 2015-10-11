@@ -297,6 +297,8 @@ class Board:
 			return True
 		elif abs(self.WK.y - self.BK.y) == 2 and abs(self.WK.x - self.BK.x)<=1:# and self.WR.x in (self.BK.x,self.BK.x -1,self.BK.x +1):
 			return True
+		elif abs(self.WK.x - self.BK.x) == 2 and abs(self.WK.y - self.BK.y) == 2:
+			return True
 		else:
 			return False
 
@@ -393,6 +395,18 @@ def heustric(board, currentTurn):
 
 		if board.BK.x in (0,7) or board.BK.y in (0,7):
 			if board.WK.x == board.BK.x or board.WK.y == board.BK.y:
+				hvalue += 100000
+		if board.BK.x ==0 and board.WR.x ==1:
+			if board.WK.x ==2:
+				hvalue += 100000
+		if board.BK.x ==7 and board.WR.x ==6:
+			if board.WK.x ==5:
+				hvalue +=100000
+		if board.BK.y ==0 and board.WR.y ==1:
+			if board.WK.y ==2:
+				hvalue += 100000
+		if board.BK.y ==7 and board.WR.y ==6:
+			if board.WK.y ==5:
 				hvalue += 100000
 
 
@@ -593,6 +607,12 @@ def HandleFacing(board):
 			if (board.WR.x,board.WK.y) != (board.WR.x,board.WR.y):
 				board.WR.updatePos(board.WR.x,board.WK.y)
 				PrintWR(board)
+			elif board.WK.y == board.WR.y:
+				if board.WK.y<board.BK.y:
+					board.WR.updatePos(board.WR.x,board.WR.y+1)
+				else:
+					board.WR.updatePos(board.WR.x,board.WR.y-1)
+				
 			else: 
 				Move(board,"X", alpha,beta)
 	elif (board.WR.y < board.WK.y and board.WR.y >board.BK.y) or (board.WR.y > board.WK.y and board.WR.y <board.BK.y):
@@ -616,6 +636,13 @@ def HandleFacing(board):
 			if (board.WK.x,board.WR.y) != (board.WR.x,board.WR.y):
 				board.WR.updatePos(board.WK.x,board.WR.y)
 				PrintWR(board)
+			elif board.WK.x == board.WR.x:
+				if board.WK.x<board.BK.x:
+					board.WR.updatePos(board.WR.x+1,board.WR.y)
+					PrintWR(board)
+				else:
+					board.WR.updatePos(board.WR.x-1,board.WR.y)
+					PrintWR(board)
 			else:
 				Move(board,"X", alpha,beta)
 
@@ -782,13 +809,22 @@ def HandleUnderAttack(board):
 			board.WR.updatePos(7,board.WR.y)
 		else:
 			board.WR.updatePos(0,board.WR.y)
-	elif(board.WR.x <=3):
+	elif board.BK.y ==7 and board.WR.y ==6:
 		if board.WR.y <=3:
 			board.WR.updatePos(board.WR.x,7)
 		else:
 			board.WR.updatePos(board.WR.x,0)
 	else:
-		board.WR.updatePos(board.WR.x,0)
+		if board.BK.x < board.BK.y:
+			if board.BK.x<4:
+				board.WR.updatePos(7,board.WR.y)
+			else:
+				board.WR.updatePos(0,board.WR.y)
+		else:
+			if board.BK.y<4:
+				board.WR.updatePos(board.WR.x,7)
+			else:
+				board.WR.updatePos(board.WR.x,0)
 	PrintWR(board)
 
 def HandlePreCheckmate(board):
@@ -902,7 +938,7 @@ def Play(moves, board):
 				HandleFacing(board)
 
 			# if WR is attacked 
-			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding():
+			elif (board.WR.x, board.WR.y) in board.BK.getSurrounding() :
 				HandleUnderAttack(board)		
 
 			# use alphaBeta to pick a best move
