@@ -167,20 +167,38 @@ class Board:
 			result.append((piece.ptype, i[0], i[1]))
 		return result
 
-	def legalMove(self, piece):
-		current = (piece.x,piece.y)
-		if(piece.player == "X"):
-			dangerZone = self.BK.getSurrounding()
-			if(piece.ptype == "WK"):
-				if ((self.WR.x, self.WR.y) in dangerZone):
-					return False
-				else: 
-					return True
-			else:
-				if((self.WK.x, self.WK.y) in dangerZone):
-					return False
-				else:
-					return True
+	def legalMove(self,piece):
+		locations = []
+		for i in range(0,8):
+			if (i,piece.y) != (piece.x,piece.y):
+				locations.append((i, piece.y))
+			if (piece.x,i) != (piece.x,piece.y):
+				locations.append((piece.x, i))
+
+		if self.WR.x == self.WK.x:
+			size = len(locations)
+			for i in range(size):
+				for temp in locations:
+					if self.WR.y < self.WK.y:
+						if temp[1]>self.WK.y:
+							locations.remove(temp)
+					else:
+						if temp[1]<self.WK.y:
+							locations.remove(temp)
+		if self.WR.y == self.WK.y:
+			size = len(locations)
+			for i in range(size):
+				for temp in locations:
+					if self.WR.x < self.WK.x:
+						if temp[0]>self.WK.x:
+							locations.remove(temp)
+					else:
+						if temp[0]<self.WK.x:
+							locations.remove(temp)
+
+		return locations
+
+
 
 	def isCheck(self, player):
 		if(player == "X"):
@@ -354,7 +372,7 @@ def heustric(board, currentTurn):
 			dangerZone.extend(board.availablePos(board.WR))
 			# two lines below will make BK attack the rook
 			#distance = math.sqrt(math.pow((board.WR.x - board.BK.x),2) + math.pow((board.WR.y - board.BK.y),2))
-		#hvalue += (10 -distance)*10000
+			#hvalue += (10 -distance)*10000
 		if (board.BK.x,board.BK.y) in dangerZone:
 			hvalue -=100000000
 
@@ -372,6 +390,11 @@ def heustric(board, currentTurn):
 			hvalue -=100000000
 		if (board.BK.x,board.BK.y) in [(3,3),(3,4),(4,3),(4,4)]:
 			hvalue -= 300
+
+		if board.BK.x in (0,7) or board.BK.y in (0,7):
+			if board.WK.x == board.BK.x or board.WK.y == board.BK.y:
+				hvalue += 100000
+
 
 		return hvalue
 
@@ -518,7 +541,7 @@ def HandleCheckmate(board):
 
 
 def HandleCorner(board):
-	#print("handle corner")
+	print("handle corner")
 	if (board.BK.x,board.BK.y) == (0,0):
 		if board.WK.y ==2:
 			if board.WR.x != board.WK.x:
@@ -551,7 +574,7 @@ def HandleCorner(board):
 	board.printState()
 
 def HandleFacing(board):
-	#print("handle facing")
+	print("handle facing")
 	if (board.WR.x < board.WK.x and board.WR.x >board.BK.x) or (board.WR.x > board.WK.x and board.WR.x <board.BK.x):
 		if board.WK.y == board.BK.y:
 			if board.BK.y < 4:
@@ -578,6 +601,9 @@ def HandleFacing(board):
 				if (board.WK.x+1,board.WR.y) != (board.WR.x,board.WR.y):
 					board.WR.updatePos(board.WK.x+1,board.WR.y)
 					PrintWR(board)
+				elif (board.WK.x+1,board.WR.y) == (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WK.x,board.WR.y)
+					PrintWR(board)
 				else:
 					Move(board,"X", alpha,beta)
 			else:
@@ -593,30 +619,6 @@ def HandleFacing(board):
 			else:
 				Move(board,"X", alpha,beta)
 
-	elif (abs(board.BK.y -board.WK.y) ==2):
-		if board.BK.y<board.WK.y:
-			if (board.WR.x,board.WK.y-1) in rookway(board.WR):
-				if (board.WR.x,board.WK.y -1) != (board.WR.x,board.WR.y):
-					board.WR.updatePos(board.WR.x,board.WK.y -1)
-					PrintWR(board)
-				else:
-					Move(board,"X", alpha,beta)
-			else:
-				board.WR.updatePos(board.WR.x,board.BK.y+1)
-				PrintWR(board)
-		else: # BK on the right hand side of the rook
-			if (board.WR.x,board.WK.y+1) in rookway(board.WR):
-				if (board.WR.x,board.WK.y +1) != (board.WR.x,board.WR.y):
-					board.WR.updatePos(board.WR.x,board.WK.y +1)
-					PrintWR(board)
-				else:
-					Move(board,"X", alpha,beta)
-			else:
-				board.WR.updatePos(board.WR.x,board.BK.y-1)
-				# if board.BK.y < board.WK.y:
-				# 	board.WR.updatePos(board.WR.x,board.BK.y+1)
-				# else;
-				# 	board
 	elif abs(board.BK.x-board.WK.x)==2:
 		if board.BK.x<board.WK.x:
 			if (board.WK.x-1,board.WR.y) in rookway(board.WR):
@@ -637,19 +639,45 @@ def HandleFacing(board):
 			else:
 				Move(board,"X", alpha,beta)	
 
+	elif (abs(board.BK.y -board.WK.y) ==2):
+		if board.BK.y<board.WK.y:
+			if (board.WR.x,board.WK.y-1) in rookway(board.WR):
+				if (board.WR.x,board.WK.y -1) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WR.x,board.WK.y -1)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				board.WR.updatePos(board.WR.x,board.BK.y+1)
+				PrintWR(board)
+		else: # BK on the right hand side of the rook
+			if board.WR.y == board.WK.y+1:
+				board.WR.updatePos(board.WK.x,board.WR.y)
+				PrintWR(board)
+			elif (board.WR.x,board.WK.y+1) in rookway(board.WR):
+				if (board.WR.x,board.WK.y +1) != (board.WR.x,board.WR.y):
+					board.WR.updatePos(board.WR.x,board.WK.y +1)
+					PrintWR(board)
+				else:
+					Move(board,"X", alpha,beta)
+			else:
+				board.WR.updatePos(board.WR.x,board.BK.y-1)
+				PrintWR(board)
+	
+
 def HandleEdge(board):
-	#print("handle edge")
+	print("handle edge")
 	if board.BK.y == 0:
 		if board.WR.y == 1:
-			if (board.WR.x,board.WR.y) in board.BK.getSurrounding() or (board.WR.x-1,board.WR.y) in board.WR.getSurrounding() or (board.WR.x+1,board.WR.y) in board.WR.getSurrounding():
+			if (board.WR.x,board.WR.y) in board.BK.getSurrounding() or board.WK.y!=0: #(board.WR.x-1,board.WR.y) in board.WR.getSurrounding() or (board.WR.x+1,board.WR.y) in board.WR.getSurrounding():
 				if board.BK.x < 4:
-					if board.WR.x !=7 and (7,1) in board.availablePos(board.WR):
+					if board.WR.x !=7 and (7,1) in board.legalMove(board.WR):
 						board.WR.updatePos(7,1)
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:		
-					if board.WR.x !=0 and (0,1) in board.availablePos(board.WR):
+					if board.WR.x !=0 and (0,1) in board.legalMove(board.WR):
 						board.WR.updatePos(0,1)	
 						PrintWR(board)
 					else:
@@ -661,15 +689,15 @@ def HandleEdge(board):
 			Move(board,"X", alpha,beta)
 	elif board.BK.y == 7:
 		if board.WR.y == 6:
-			if (board.WR.x,board.WR.y) in board.BK.getSurrounding() or (board.WR.x-1,board.WR.y) in board.WR.getSurrounding() or (board.WR.x+1,board.WR.y) in board.WR.getSurrounding():
+			if (board.WR.x,board.WR.y) in board.BK.getSurrounding() or board.WK.y!=7: #(board.WR.x-1,board.WR.y) in board.WR.getSurrounding() or (board.WR.x+1,board.WR.y) in board.WR.getSurrounding():
 				if board.BK.x < 4:
-					if board.WR.x !=7 and (7,6) in board.availablePos(board.WR):
+					if board.WR.x !=7 and (7,6) in board.legalMove(board.WR):
 						board.WR.updatePos(7,6)	
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:		
-					if board.WR.x !=0 and (0,6) in board.availablePos(board.WR):
+					if board.WR.x !=0 and (0,6) in board.legalMove(board.WR):
 						board.WR.updatePos(0,6)	
 						PrintWR(board)
 					else:
@@ -684,15 +712,15 @@ def HandleEdge(board):
 				Move(board,"X", alpha,beta)
 	elif board.BK.x ==0:
 		if board.WR.x ==1:
-			if (board.WR.x, board.WR.y) in board.BK.getSurrounding() or (board.WR.x,board.WR.y+1) in board.WR.getSurrounding() or (board.WR.x,board.WR.y-1) in board.WR.getSurrounding():
+			if (board.WR.x, board.WR.y) in board.BK.getSurrounding() or board.WK.x!=0: #(board.WR.x,board.WR.y+1) in board.WR.getSurrounding() or (board.WR.x,board.WR.y-1) in board.WR.getSurrounding():
 				if board.BK.y <4:
-					if board.WR.y !=7 and (1,7) in board.availablePos(board.WR):
+					if board.WR.y !=7 and (1,7) in board.legalMove(board.WR):
 						board.WR.updatePos(1,7)
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:
-					if board.WR.y !=0 and (1,0) in board.availablePos(board.WR):
+					if board.WR.y !=0 and (1,0) in board.legalMove(board.WR):
 						board.WR.updatePos(1,0)
 						PrintWR(board)
 					else:
@@ -707,15 +735,15 @@ def HandleEdge(board):
 				Move(board,"X", alpha,beta)
 	else:
 		if board.WR.x ==6:
-			if (board.WR.x, board.WR.y) in board.BK.getSurrounding() or (board.WR.x, board.WR.y+1) in board.BK.getSurrounding() or (board.WR.x, board.WR.y-1) in board.BK.getSurrounding():
+			if (board.WR.x, board.WR.y) in board.BK.getSurrounding() or board.WK.x!=7: #(board.WR.x, board.WR.y+1) in board.WR.getSurrounding() or (board.WR.x, board.WR.y-1) in board.WR.getSurrounding():
 				if board.BK.y <4:
-					if board.WR.y !=7 and (6,7) in board.availablePos(board.WR):
+					if board.WR.y !=7 and (6,7) in board.legalMove(board.WR):
 						board.WR.updatePos(6,7)
 						PrintWR(board)
 					else:
 						Move(board,"X", alpha,beta)
 				else:
-					if board.WR.y !=0 and (6,0) in board.availablePos(board.WR):
+					if board.WR.y !=0 and (6,0) in board.legalMove(board.WR):
 						board.WR.updatePos(6,0)
 						PrintWR(board)
 					else:
@@ -731,7 +759,7 @@ def HandleEdge(board):
 
 
 def HandleUnderAttack(board):
-	#print("handle under attacked")
+	print("handle under attacked")
 	if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
 		Move(board,"X", alpha,beta)
 	elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
@@ -764,7 +792,7 @@ def HandleUnderAttack(board):
 	PrintWR(board)
 
 def HandlePreCheckmate(board):
-	#print("handle pre-checkmate")
+	print("handle pre-checkmate")
 	if board.BK.x == 0 or board.BK.x == 7:
 		if board.WR.x == 1 or board.WR.x ==6:
 			#if (board.WR.x,board.WR.y) in board.WK.getSurrounding():
@@ -921,6 +949,7 @@ def main():
 			print("\nInitial board")
 			temp.printState()
 			Play(int(numMoves), temp)
+
 
 			temp = Board()
 
