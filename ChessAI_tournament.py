@@ -1151,7 +1151,7 @@ def main():
 				PlayX(temp)
 				if temp.isCheckmate("Y"):
 					print("X wins!")
-					board.BK.capture == True
+					temp.BK.capture == True
 					break
 				else:	
 					yMove = input("Enter player Y's move in format K(x,y): ")
@@ -1173,7 +1173,7 @@ def main():
 
 				if temp.isCheckmate("Y"):
 					print("X wins!")
-					board.BK.capture == True
+					temp.BK.capture == True
 					break
 				else:
 					PlayY(temp)
