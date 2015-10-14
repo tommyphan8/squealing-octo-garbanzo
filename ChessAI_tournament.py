@@ -1161,7 +1161,7 @@ def main():
 				
 		elif initial == "Y":
 			for y in range(1,36):
-				print("Move #" + str(x))
+				print("Move #" + str(y))
 				xMove = input("Enter player X's move in format K(x,y): ")
 				print("Player X's " + xMove[0] + " moved to (" + str(int(xMove[4])-1) + " , " + str(int(xMove[2])-1) + " )")
 				if xMove[0] == "K":
