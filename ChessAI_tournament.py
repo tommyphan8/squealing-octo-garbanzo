@@ -1064,8 +1064,8 @@ def PlayY(board):
 			board.BK.capture == True
 			print("X win, Checkmate")
 	else:
-		output.write("\nMove #" + str(i+1) +"\n")
-		print("\nMove #",i+1)
+		#output.write("\nMove #" + str(i+1) +"\n")
+		#print("\nMove #",i+1)
 		print("Y turn")
 		temp = board.canCapture("Y")
 		if temp!= False:
@@ -1131,60 +1131,49 @@ def main():
 		else:
 			print("GoodBye!")	
 	else:
-		print("Starting Champion Game!")
+
+
+		initial = input("Are you player X or Y? (X/Y) ")
+		#load pieces into board
+		for x in range(0,3):
+				temp.addPiece(listPieces[x][0], listPieces[x][1], listPieces[x][3], listPieces[x][2])
+
+		print("Game Started")
+		print("Initial Positions: ", end="")
+		for x in range(0,3):
+				print(listPieces[x], end = "")
+		print("\n")
+		temp.printState()		
+		
+		if initial == "X":
+			for x in range(0,35):
+				PlayX(temp)
+				if temp.isCheckmate("Y"):
+					print("X wins!")
+					break
+				else:	
+					yMove = input("Enter player Y's move in format K(x,y): ")
+					print("Player Y's " + yMove[0] + " moved to (" + str(int(yMove[4])-1) + " , " + str(int(yMove[2])-1) + " )")
+					temp.BK.updatePos(int(yMove[4])-1, int(yMove[2])-1)
+					temp.printState()
+		elif initial == "Y":
+			for y in range(0,35):
+				
 	output.close()	
 
 
+main()
 
-temp = Board()
-# take 14
-# temp.addPiece("X","WR",7,1)
-# temp.addPiece("X","WK",4,4)
-# temp.addPiece("Y","BK",2,2)
-
-# take 20 moves or 14
-# temp.addPiece("X","WR",4,5)
-# temp.addPiece("X","WK",4,4)
-# temp.addPiece("Y","BK",2,2)
-
-# 4 moves
-# temp.addPiece("X","WR",1,4)
-# temp.addPiece("X","WK",0,6)
-# temp.addPiece("Y","BK",0,0)
-
+# temp = Board()
 
 # temp.addPiece("X","WR",4,5)
-# temp.addPiece("X","WK",7,4)
-# temp.addPiece("Y","BK",1,2)
-
-
-# take 6 moves
-# temp.addPiece("X","WR",4,1)
-# temp.addPiece("X","WK",1,2)
-# temp.addPiece("Y","BK",1,0)
-
-#take 4 moves
-# temp.addPiece("X","WR",7,5)
-# temp.addPiece("X","WK",4,5)
-# temp.addPiece("Y","BK",5,7)
-
-
-#take 12 moves
-# temp.addPiece("X","WR",5,6)
-# temp.addPiece("X","WK",6,5)
-# temp.addPiece("Y","BK",4,7)
-
-#testcase 1
-# temp.addPiece("X","WR",7,4)
-# temp.addPiece("X","WK",4,5)
-# temp.addPiece("Y","BK",5,7)
-
-#testcase 2
-temp.addPiece("X","WR",4,5)
-temp.addPiece("X","WK",5,4)
-temp.addPiece("Y","BK",3,6)
-
-Play(35,temp)
+# temp.addPiece("X","WK",5,4)
+# temp.addPiece("Y","BK",3,6)
+# temp.printState()
+# PlayX(temp)
+# PlayY(temp)
+# temp.printState()
+#Play(35,temp)
 
 
 
