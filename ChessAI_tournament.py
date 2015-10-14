@@ -1146,19 +1146,41 @@ def main():
 		temp.printState()		
 		
 		if initial == "X":
-			for x in range(0,35):
+			for x in range(1,36):
+				print("Move #" +str(x))
 				PlayX(temp)
 				if temp.isCheckmate("Y"):
 					print("X wins!")
+					board.BK.capture == True
 					break
 				else:	
 					yMove = input("Enter player Y's move in format K(x,y): ")
 					print("Player Y's " + yMove[0] + " moved to (" + str(int(yMove[4])-1) + " , " + str(int(yMove[2])-1) + " )")
 					temp.BK.updatePos(int(yMove[4])-1, int(yMove[2])-1)
 					temp.printState()
-		elif initial == "Y":
-			for y in range(0,35):
 				
+		elif initial == "Y":
+			for y in range(1,36):
+				print("Move #" + str(x))
+				xMove = input("Enter player X's move in format K(x,y): ")
+				print("Player X's " + xMove[0] + " moved to (" + str(int(xMove[4])-1) + " , " + str(int(xMove[2])-1) + " )")
+				if xMove[0] == "K":
+					temp.WK.updatePos(int(xMove[4])-1, int(xMove[2])-1)
+					temp.printState()
+				elif xMove[0] == "R":
+					temp.WR.updatePos(int(xMove[4])-1, int(xMove[2])-1)
+					temp.printState()
+
+				if temp.isCheckmate("Y"):
+					print("X wins!")
+					board.BK.capture == True
+					break
+				else:
+					PlayY(temp)
+				#count++
+
+
+
 	output.close()	
 
 
