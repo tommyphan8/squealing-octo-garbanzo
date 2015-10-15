@@ -382,25 +382,12 @@ def heustric(board, currentTurn):
 			hvalue -= 10000000
 		if board.BK.x == 7 and board.WR.x == 6 and board.BK.y == board.WK.y:
 			hvalue -= 10000000
-
 		if board.BK.y == 0 and board.WR.y == 1 and board.BK.x == board.WK.x:
 			hvalue -= 10000000
-		
 		if board.BK.y == 7 and board.WR.y == 6 and board.BK.x == board.WK.x:
 			hvalue -= 10000000
-
-		# if board.BK.y == 0 and board.WR.y == 1 and board.BK.x == board.WK.x and board.WR.x in (board.BK.x +1,board.BK.x-1):
-		# 	hvalue += 10000000			
-		# if board.BK.y == 7 and board.WR.y == 6 and board.BK.x == board.WK.x and board.WR.x in (board.BK.x +1,board.BK.x-1):
-		# 	hvalue += 10000000
-		# if board.BK.x == 7 and board.WR.x == 6 and board.BK.y == board.WK.y and board.WR.y in (board.BK.y +1,board.BK.y -1):
-		# 	hvalue += 10000000
-		# if board.BK.x == 0 and board.WR.x == 1 and board.BK.y == board.WK.y and board.WR.y in (board.BK.y +1, board.BK.y -1):
-		# 	hvalue += 10000000
-
-
-
-
+		if board.BK.y == 7 and board.WR.y == 6 and board.BK.x == board.WK.x and board.WR.x in (board.BK.x +1,board.BK.x-1):
+			hvalue += 10000000
 
 		return hvalue
 	else: #player X
@@ -587,7 +574,7 @@ def HandleCheckmate(board):
 
 
 def HandleCorner(board):
-	print("handle corner")
+	#print("handle corner")
 	if (board.BK.x,board.BK.y) == (0,0):
 		if board.WK.y ==2:
 			if board.WR.x != board.WK.x:
@@ -620,7 +607,7 @@ def HandleCorner(board):
 	board.printState()
 
 def HandleFacing(board):
-	print("handle facing")
+	#print("handle facing")
 	if (board.WR.x < board.WK.x and board.WR.x >board.BK.x) or (board.WR.x > board.WK.x and board.WR.x <board.BK.x):
 		if board.WK.y == board.BK.y:
 			if board.BK.y < 4:
@@ -738,7 +725,7 @@ def HandleFacing(board):
 	
 
 def HandleEdge(board):
-	print("handle edge")
+	#print("handle edge")
 	if board.BK.y == 0:
 		if board.WR.y == 1:
 			if (board.BK.x,board.BK.y)==(0,0) and (1,1) in board.WK.getSurrounding():
@@ -853,7 +840,7 @@ def HandleEdge(board):
 
 
 def HandleUnderAttack(board):
-	print("handle under attacked")
+	#print("handle under attacked")
 	if (board.WR.x, board.WR.y) in board.WK.getSurrounding():
 		Move(board,"X", alpha,beta)
 	elif board.BK.x >3 and (board.WR.x -2,board.WR.y) in board.WK.getSurrounding():
@@ -895,7 +882,7 @@ def HandleUnderAttack(board):
 	PrintWR(board)
 
 def HandlePreCheckmate(board):
-	print("handle pre-checkmate")
+	#print("handle pre-checkmate")
 	if board.BK.x == 0 or board.BK.x == 7:
 		if board.WR.x == 1 or board.WR.x ==6:
 			#if (board.WR.x,board.WR.y) in board.WK.getSurrounding():
@@ -1079,8 +1066,8 @@ def PlayY(board):
 			board.BK.capture == True
 			print("X win, Checkmate")
 	else:
-		#output.write("\nMove #" + str(i+1) +"\n")
-		#print("\nMove #",i+1)
+		output.write("\nMove #" + str(i+1) +"\n")
+		print("\nMove #",i+1)
 		print("Y turn")
 		temp = board.canCapture("Y")
 		if temp!= False:
@@ -1146,76 +1133,101 @@ def main():
 		else:
 			print("GoodBye!")	
 	else:
-
-
-		initial = input("Are you player X or Y? (X/Y) ")
-		#load pieces into board
-		for x in range(0,3):
-				temp.addPiece(listPieces[x][0], listPieces[x][1], listPieces[x][3], listPieces[x][2])
-
-		print("Game Started")
-		print("Initial Positions: ", end="")
-		for x in range(0,3):
-				print(listPieces[x], end = "")
-		print("\n")
-		temp.printState()		
-		
-		if initial == "X":
-			for x in range(1,36):
-				print("Move #" +str(x))
-				PlayX(temp)
-				if temp.isCheckmate("Y"):
-					print("X wins!")
-					temp.BK.capture == True
-					break
-				else:	
-					yMove = input("Enter player Y's move in format K(x,y): ")
-					print("Player Y's " + yMove[0] + " moved to (" + str(int(yMove[4])-1) + " , " + str(int(yMove[2])-1) + " )")
-					temp.BK.updatePos(int(yMove[4])-1, int(yMove[2])-1)
-					temp.printState()
-				
-		elif initial == "Y":
-			for y in range(1,36):
-				print("Move #" + str(y))
-				xMove = input("Enter player X's move in format K(x,y): ")
-				print("Player X's " + xMove[0] + " moved to (" + str(int(xMove[4])-1) + " , " + str(int(xMove[2])-1) + " )")
-				if xMove[0] == "K":
-					temp.WK.updatePos(int(xMove[4])-1, int(xMove[2])-1)
-					temp.printState()
-				elif xMove[0] == "R":
-					temp.WR.updatePos(int(xMove[4])-1, int(xMove[2])-1)
-					temp.printState()
-
-				if temp.isCheckmate("Y"):
-					print("X wins!")
-					temp.BK.capture == True
-					break
-				else:
-					PlayY(temp)
-				#count++
-
-
-
+		print("Starting Champion Game!")
 	output.close()	
 
 
-# main()
 
 temp = Board()
+# take 14
+# temp.addPiece("X","WR",7,1)
+# temp.addPiece("X","WK",4,4)
+# temp.addPiece("Y","BK",2,2)
 
+# take 20 moves or 14
+# temp.addPiece("X","WR",4,5)
+# temp.addPiece("X","WK",4,4)
+# temp.addPiece("Y","BK",2,2)
+
+# 4 moves
+# temp.addPiece("X","WR",1,4)
+# temp.addPiece("X","WK",0,6)
+# temp.addPiece("Y","BK",0,0)
+
+
+# temp.addPiece("X","WR",4,5)
+# temp.addPiece("X","WK",7,4)
+# temp.addPiece("Y","BK",1,2)
+
+
+# take 6 moves
+# temp.addPiece("X","WR",4,1)
+# temp.addPiece("X","WK",1,2)
+# temp.addPiece("Y","BK",1,0)
+
+#take 4 moves
+# temp.addPiece("X","WR",7,5)
+# temp.addPiece("X","WK",4,5)
+# temp.addPiece("Y","BK",5,7)
+
+
+#take 12 moves
+# temp.addPiece("X","WR",5,6)
+# temp.addPiece("X","WK",6,5)
+# temp.addPiece("Y","BK",4,7)
+
+#testcase 1
+# temp.addPiece("X","WR",7,4)
+# temp.addPiece("X","WK",4,5)
+# temp.addPiece("Y","BK",5,7)
+
+#testcase 2
 # temp.addPiece("X","WR",4,5)
 # temp.addPiece("X","WK",5,4)
 # temp.addPiece("Y","BK",3,6)
+
+
 temp.addPiece("X","WR",4,6)
 temp.addPiece("X","WK",4,5)
 temp.addPiece("Y","BK",5,7)
-# temp.printState()
+
+
+
+#temp.printState()
 # PlayX(temp)
-# PlayY(temp)
-# temp.printState()
+
 Play(35,temp)
 
 
+
+
+def PlayerX():
+	i = 0
+	while i<35:
+		wk = input("Enter white king position ")
+		temp.addPiece("X","WK",int(wk[0]),int(wk[2]))
+		wr = input("Enter white rook position ")
+		temp.addPiece("X","WR",int(wr[0]),int(wr[2]))
+		bk = input("Enter black king position ")
+		temp.addPiece("Y","BK",int(bk[0]),int(bk[2]))
+		temp.printState()
+		PlayX(temp)
+		i +=1
+
+def PlayerY():
+	i = 0
+	while i<35:
+		wk = input("Enter white king position ")
+		temp.addPiece("X","WK",int(wk[0]),int(wk[2]))
+		wr = input("Enter white rook position ")
+		temp.addPiece("X","WR",int(wr[0]),int(wr[2]))
+		bk = input("Enter black king position ")
+		temp.addPiece("Y","BK",int(bk[0]),int(bk[2]))
+		temp.printState()
+		PlayX(temp)
+		i +=1
+
+# PlayerX()
 
 # pause screen
 import msvcrt as m
